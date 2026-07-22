@@ -5,7 +5,65 @@ import json
 import os
 from datetime import datetime
 
+# ========== CONFIGURAÇÃO DA PÁGINA ==========
 st.set_page_config(
+    page_title="LM - Importing 2U | Precificação",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ========== ESTILO CSS ==========
+st.markdown("""
+<style>
+    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
+    .stButton > button:hover { background-color: #45a049; }
+# ========== SIDEBAR ==========
+# Logo da empresa e título
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80) # Imagem de exemplo (caixa)
+st.sidebar.markdown("""
+<h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
+<p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
+""", unsafe_allow_html=True)
+
+pagina = st.sidebar.radio(
+    "Navegação",
+    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
+     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+)
+
+config = carregar_config()
+df_produtos = carregar_produtos()
+vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
+<p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
+""", unsafe_allow_html=True)
+
+pagina = st.sidebar.radio(
+    "Navegação",
+    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
+     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+)
+st.set_page_config(
+    page_title="LM - Importing 2U | Precificação",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ========== ESTILO CSS ==========
+st.markdown("""
+<style>
+    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
+    .stButton > button:hover { background-color: #45a049; }
+    .stTextInput > div > div > input { border-radius: 8px; }
+    .stSelectbox > div > div > select { border-radius: 8px; }
+    .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+</style>
+""", unsafe_allow_html=True)
+    .stSelectbox > div > div > select { border-radius: 8px; }
+    .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+</style>
+""", unsafe_allow_html=True)
     page_title="App de Precificação - Luiz",
     page_icon="📊",
     layout="wide",
