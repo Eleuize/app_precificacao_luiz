@@ -1,0 +1,33 @@
+{
+  "custos_fixos": {
+    "aluguel": 90,
+    "pro_labore": 120,
+    "contabilidade": 352,
+    "internet": 90,
+    "logistica": 250,
+    "outros": 300
+  },
+  "impostos": {
+    "ii": 0,
+    "ipi": 0,
+    "icms": 4.5,
+    "pis": 0,
+    "cofins": 0,
+    "iof": 0
+  },
+  "marketplaces": {
+    "Mercado Livre": {
+      "comissao": 6.75,
+      "taxa_fixa": 0.13
+    },
+    "Shopee": {
+      "comissao": 4.0,
+      "taxa_fixa": 0.20
+    },
+    "Amazon": {
+      "comissao": 4.5,
+      "taxa_fixa": 0.15
+    }
+  },
+  "cotacao_dolar": 5.30
+}
