@@ -19,13 +19,24 @@ st.markdown("""
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
     .stButton > button:hover { background-color: #45a049; }
 # ========== SIDEBAR ==========
-# Logo da empresa e título
+# Logo da empresa e titulo
 st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80) # Imagem de exemplo (caixa)
-st.sidebar.markdown("""
-<h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
-<p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
-""", unsafe_allow_html=True)
+st.sidebar.markdown(
+    """
+    <h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
+    <p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
+    """, unsafe_allow_html=True
+)
 
+pagina = st.sidebar.radio(
+    "Navegação",
+    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
+     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+)
+
+config = carregar_config()
+df_produtos = carregar_produtos()
+vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
 pagina = st.sidebar.radio(
     "Navegação",
     ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
