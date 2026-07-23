@@ -5,7 +5,6 @@ import json
 import os
 from datetime import datetime
 
-# ========== CONFIGURAÇÃO DA PÁGINA ==========
 st.set_page_config(
     page_title="LM - Importing 2U | Precificação",
     page_icon="📦",
@@ -13,64 +12,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-    
-   st.markdown("""
-    <style>
-    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
-    .stButton > button:hover { background-color: #45a049; }
-    # ========== SIDEBAR ==========
-    # Logo da empresa e titulo
-    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80) # Imagem de exemplo (caixa)
-    st.sidebar.markdown(
-    """
-    <h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
-    <p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2<span style="display:none;">0</span>U</p>
-    """, unsafe_allow_html=True
-)
-
-pagina = st.sidebar.radio(
-    "Navegação",
-    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
-     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
-)
-
-config = carregar_config()
-df_produtos = carregar_produtos()
-vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
-pagina = st.sidebar.radio(
-    "Navegação",
-    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
-     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
-)
-
-config = carregar_config()
-df_produtos = carregar_produtos()
-vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
-<p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
-""", unsafe_allow_html=True)
-
-pagina = st.sidebar.radio(
-    "Navegação",
-    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
-     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
-)
-st.set_page_config(
-    page_title="LM - Importing 2U | Precificação",
-    page_icon="📦",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# ========== ESTILO CSS ==========
 st.markdown("""
 <style>
-.stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
+    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
     .stButton > button:hover { background-color: #45a049; }
     .stTextInput > div > div > input { border-radius: 8px; }
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
 </style>
 """, unsafe_allow_html=True)
+
+def carregar_config():
+    if os.path.exists("config.json"):
         with open("config.json", "r") as f:
             return json.load(f)
     else:
@@ -98,7 +51,7 @@ def salvar_produtos(df):
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
     custo_brl = (row["Custo_USD"] + row["Frete_USD"]) * cotacao * (1 + config["impostos"]["iof"] / 100)
-    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + row["COFINS_%"]) / 100
+    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + row["COFINS_"]) / 100
     custo_fixo_total = sum(config["custos_fixos"].values())
     custo_fixo_unit = custo_fixo_total / vendas_mes if vendas_mes > 0 else 0
     custo_total = custo_brl + impostos + row["Embalagem_R$"] + custo_fixo_unit
@@ -116,9 +69,18 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-st.sidebar.title("📊 App de Precificação")
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/2830/2830305.png", width=80)
-pagina = st.sidebar.radio("Navegação", ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"])
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80)
+st.sidebar.markdown("""
+<h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
+<p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
+""", unsafe_allow_html=True)
+
+pagina = st.sidebar.radio(
+    "Navegação",
+    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
+     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+)
+
 config = carregar_config()
 df_produtos = carregar_produtos()
 vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
