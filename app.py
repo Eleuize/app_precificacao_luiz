@@ -13,15 +13,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
-st.markdown("""
-<style>
+    
+    st.markdown("""
+    <style>
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
     .stButton > button:hover { background-color: #45a049; }
-# ========== SIDEBAR ==========
-# Logo da empresa e titulo
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80) # Imagem de exemplo (caixa)
-st.sidebar.markdown(
+    # ========== SIDEBAR ==========
+    # Logo da empresa e titulo
+    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80) # Imagem de exemplo (caixa)
+    st.sidebar.markdown(
     """
     <h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
     <p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2<span style="display:none;">0</span>U</p>
