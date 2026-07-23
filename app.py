@@ -64,35 +64,13 @@ st.set_page_config(
 # ========== ESTILO CSS ==========
 st.markdown("""
 <style>
-    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
+.stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
     .stButton > button:hover { background-color: #45a049; }
     .stTextInput > div > div > input { border-radius: 8px; }
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
 </style>
 """, unsafe_allow_html=True)
-    .stSelectbox > div > div > select { border-radius: 8px; }
-    .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-</style>
-""", unsafe_allow_html=True)
-    page_title="App de Precificação - Luiz",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-st.markdown("""
-<style>
-    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
-    .stButton > button:hover { background-color: #45a049; }
-    .stTextInput > div > div > input { border-radius: 8px; }
-    .stSelectbox > div > div > select { border-radius: 8px; }
-    .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-</style>
-""", unsafe_allow_html=True)
-
-def carregar_config():
-    if os.path.exists("config.json"):
         with open("config.json", "r") as f:
             return json.load(f)
     else:
