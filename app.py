@@ -24,7 +24,7 @@ st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=
 st.sidebar.markdown(
     """
     <h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
-    <p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
+    <p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2<span style="display:none;">0</span>U</p>
     """, unsafe_allow_html=True
 )
 
