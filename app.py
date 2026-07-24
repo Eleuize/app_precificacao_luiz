@@ -69,7 +69,9 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80)
+# ========== SIDEBAR COM A NOVA IMAGEM ==========
+st.sidebar.image("https://drive.google.com/uc?export=download&id=1N0UWsxv9zzKNa0E9TEzbNI_40k0KwDJR", width=100)
+
 st.sidebar.markdown("""
 <h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
 <p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
