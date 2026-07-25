@@ -51,7 +51,7 @@ def salvar_produtos(df):
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
     custo_brl = (row["Custo_USD"] + row["Frete_USD"]) * cotacao * (1 + config["impostos"]["iof"] / 100)
-    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + row["COFINS_"]) / 100
+    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + row["COFINS_"] + row["IOF_"]) / 100
     custo_fixo_total = sum(config["custos_fixos"].values())
     custo_fixo_unit = custo_fixo_total / vendas_mes if vendas_mes > 0 else 0
     custo_total = custo_brl + impostos + row["Embalagem_R$"] + custo_fixo_unit
