@@ -69,11 +69,17 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-# ========== SIDEBAR COM A CAIXA PERSONALIZADA (OLC) ==========
+# ========== SIDEBAR COM A CAIXA 3D E OLC GRANDE ==========
 st.sidebar.markdown("""
 <div style='text-align: center; margin-bottom: 15px;'>
-    <div style='display: inline-block; border: 3px solid #333; border-radius: 8px; padding: 10px 20px; background-color: #f9f9f9; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);'>
-        <h1 style='font-size: 28px; margin: 0; font-weight: bold; color: #e67e22; letter-spacing: 2px;'>OLC</h1>
+    <!-- Desenho da Caixa 3D em CSS -->
+    <div style='display: inline-block; position: relative; width: 100px; height: 100px; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border: 3px solid #444; border-radius: 12px; box-shadow: 4px 4px 10px rgba(0,0,0,0.2);'>
+        <!-- Aba da caixa (perspectiva 3D) -->
+        <div style='position: absolute; top: -8px; left: 10px; width: 80px; height: 20px; background: #ddd; border: 2px solid #444; border-bottom: none; border-radius: 8px 8px 0 0; transform: rotateX(20deg);'></div>
+        <!-- Letras OLC Grandes -->
+        <div style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 34px; font-weight: 900; color: #e67e22; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);'>
+            OLC
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
