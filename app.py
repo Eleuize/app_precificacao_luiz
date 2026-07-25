@@ -69,15 +69,18 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-# ========== SIDEBAR (CARREGANDO IMAGEM DO PRÓPRIO GITHUB) ==========
-if os.path.exists("logo.jpg"):
-    st.sidebar.image("logo.jpg", width=100)
-else:
-    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80)
+# ========== SIDEBAR COM A CAIXA PERSONALIZADA (OLC) ==========
+st.sidebar.markdown("""
+<div style='text-align: center; margin-bottom: 15px;'>
+    <div style='display: inline-block; border: 3px solid #333; border-radius: 8px; padding: 10px 20px; background-color: #f9f9f9; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);'>
+        <h1 style='font-size: 28px; margin: 0; font-weight: bold; color: #e67e22; letter-spacing: 2px;'>OLC</h1>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.sidebar.markdown("""
-<h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
-<p style='font-size: 14px; color: gray; margin-top: 0px;'>LM - Importing 2U</p>
+<h1 style='font-size: 24px; margin-bottom: 0px; text-align: center;'>App de Precificação</h1>
+<p style='font-size: 14px; color: gray; margin-top: 0px; text-align: center;'>LM - Importing 2U</p>
 """, unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
