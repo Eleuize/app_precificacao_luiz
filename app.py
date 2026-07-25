@@ -69,8 +69,11 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-# ========== SIDEBAR COM A NOVA IMAGEM ==========
-st.sidebar.image("https://i.imgur.com/5qzmWqo.png", width=100)
+# ========== SIDEBAR (CARREGANDO IMAGEM DO PRÓPRIO GITHUB) ==========
+if os.path.exists("logo.jpg"):
+    st.sidebar.image("logo.jpg", width=100)
+else:
+    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/679/679720.png", width=80)
 
 st.sidebar.markdown("""
 <h1 style='font-size: 24px; margin-bottom: 0px;'>App de Precificação</h1>
@@ -250,4 +253,4 @@ elif pagina == "⚙️ Configurações":
     if st.button("💾 Salvar Configurações", use_container_width=True):
         with open("config.json", "w") as f:
             json.dump(config, f)
-        st.success("✅ Configurações salvas!")       
+        st.success("✅ Configurações salvas!")
