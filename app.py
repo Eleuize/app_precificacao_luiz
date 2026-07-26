@@ -69,7 +69,7 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-st.sidebar.image("logo.jpg", width=190)
+st.sidebar.image("logo.jpg", width=200)
 
 st.sidebar.markdown("""
 <h1 style='font-size: 24px; margin-bottom: 0px; text-align: center;'>App de Precificação</h1>
