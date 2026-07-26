@@ -78,49 +78,14 @@ st.sidebar.markdown("""
 
 pagina = st.sidebar.radio(
     "Navegação",
-    ["🏠 Dashboard", "📦 Produtos", "📝 Cadastrar Produto", "📥 Importar CSV", 
-     "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+    ["📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
 )
 
 config = carregar_config()
 df_produtos = carregar_produtos()
 vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
 
-if pagina == "🏠 Dashboard":
-    st.title("🏠 Dashboard - Resumo Financeiro")
-    if not df_produtos.empty:
-        resultados = []
-        for _, row in df_produtos.iterrows():
-            res = calcular_preco(row, config, vendas_mes)
-            resultados.append(res)
-        df_res = pd.DataFrame(resultados)
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Produtos", len(df_produtos))
-        col2.metric("Faturamento Estimado", f"R$ {df_res['Preco_Final_R$'].sum():,.2f}")
-        col3.metric("Lucro Total", f"R$ {df_res['Lucro_R$'].sum():,.2f}")
-        col4.metric("ROI Médio", f"{df_res['ROI_%'].mean():.1f}%")
-        fig = px.bar(df_res, x=df_produtos["Nome"], y=["Preco_Final_R$", "Lucro_R$"], barmode="group", title="Preço Final vs Lucro por Produto")
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("Nenhum produto cadastrado.")
-
-elif pagina == "📦 Produtos":
-    st.title("📦 Lista de Produtos")
-    if not df_produtos.empty:
-        st.dataframe(df_produtos, use_container_width=True, height=400)
-        if st.button("📥 Exportar para Excel"):
-            df_produtos.to_excel("produtos_exportados.xlsx", index=False)
-            st.success("Arquivo exportado!")
-        with st.expander("🗑️ Deletar Produto"):
-            produto_del = st.selectbox("Selecione o produto", df_produtos["Nome"].tolist())
-            if st.button("Deletar", type="primary"):
-                df_produtos = df_produtos[df_produtos["Nome"] != produto_del]
-                salvar_produtos(df_produtos)
-                st.rerun()
-    else:
-        st.info("Nenhum produto cadastrado.")
-
-elif pagina == "📝 Cadastrar Produto":
+if pagina == "📝 Cadastrar Produto":
     st.title("📝 Cadastrar Novo Produto")
     with st.form("form_produto"):
         col1, col2 = st.columns(2)
@@ -164,6 +129,40 @@ elif pagina == "📥 Importar CSV":
             st.success(f"✅ {len(df_import)} produtos importados!")
         except Exception as e:
             st.error(f"Erro: {e}")
+
+elif pagina == "📦 Produtos":
+    st.title("📦 Lista de Produtos")
+    if not df_produtos.empty:
+        st.dataframe(df_produtos, use_container_width=True, height=400)
+        if st.button("📥 Exportar para Excel"):
+            df_produtos.to_excel("produtos_exportados.xlsx", index=False)
+            st.success("Arquivo exportado!")
+        with st.expander("🗑️ Deletar Produto"):
+            produto_del = st.selectbox("Selecione o produto", df_produtos["Nome"].tolist())
+            if st.button("Deletar", type="primary"):
+                df_produtos = df_produtos[df_produtos["Nome"] != produto_del]
+                salvar_produtos(df_produtos)
+                st.rerun()
+    else:
+        st.info("Nenhum produto cadastrado.")
+
+elif pagina == "🏠 Dashboard":
+    st.title("🏠 Dashboard - Resumo Financeiro")
+    if not df_produtos.empty:
+        resultados = []
+        for _, row in df_produtos.iterrows():
+            res = calcular_preco(row, config, vendas_mes)
+            resultados.append(res)
+        df_res = pd.DataFrame(resultados)
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Produtos", len(df_produtos))
+        col2.metric("Faturamento Estimado", f"R$ {df_res['Preco_Final_R$'].sum():,.2f}")
+        col3.metric("Lucro Total", f"R$ {df_res['Lucro_R$'].sum():,.2f}")
+        col4.metric("ROI Médio", f"{df_res['ROI_%'].mean():.1f}%")
+        fig = px.bar(df_res, x=df_produtos["Nome"], y=["Preco_Final_R$", "Lucro_R$"], barmode="group", title="Preço Final vs Lucro por Produto")
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Nenhum produto cadastrado.")
 
 elif pagina == "🧮 Simulador":
     st.title("🧮 Simulador de Preço e Margem")
