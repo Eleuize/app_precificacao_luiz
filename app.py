@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 st.set_page_config(
-    page_title="LM - Importing 2U | Precificação",
+    page_title="CALC MARKUP | LM Importing",
     page_icon="📦",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -69,10 +69,11 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-st.sidebar.image("logo.jpg", width=220)
+# ========== BARRA LATERAL COM O NOVO TÍTULO ==========
+st.sidebar.image("logo.png", width=150)
 
 st.sidebar.markdown("""
-<h1 style='font-size: 24px; margin-bottom: 0px; text-align: center;'>App de Precificação</h1>
+<h1 style='font-size: 28px; margin-bottom: 2px; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
 <p style='font-size: 14px; color: gray; margin-top: 0px; text-align: center;'>LM - Importing 2U</p>
 """, unsafe_allow_html=True)
 
@@ -135,15 +136,15 @@ elif pagina == "📝 Cadastrar Produto":
             ipi = st.number_input("IPI %", min_value=0.0, step=0.1)
             icms = st.number_input("ICMS %", min_value=0.0, step=0.1)
             pis = st.number_input("PIS %", min_value=0.0, step=0.1)
-            cofins = st.number_input("COFINS ", min_value=0.0, step=0.1)
-            iof = st.number_input("IOF ", min_value=0.0, step=0.1)
+            cofins = st.number_input("COFINS %", min_value=0.0, step=0.1)
+            iof = st.number_input("IOF %", min_value=0.0, step=0.1)
         submit = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
         if submit:
             novo_id = df_produtos["ID"].max() + 1 if not df_produtos.empty else 1
             novo_produto = pd.DataFrame({
                 "ID": [novo_id], "Nome": [nome], "Custo_USD": [custo_usd], "Frete_USD": [frete_usd],
                 "Embalagem_R$": [embalagem], "II_%": [ii], "IPI_%": [ipi], "ICMS_%": [icms],
-                "PIS_%": [pis], "COFINS_": [cofins], "IOF_": [iof], "Marketplace": [marketplace]
+                "PIS_%": [pis], "COFINS_%": [cofins], "IOF_%": [iof], "Marketplace": [marketplace]
             })
             df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
             salvar_produtos(df_produtos)
@@ -151,14 +152,14 @@ elif pagina == "📝 Cadastrar Produto":
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
-    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace")
+    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_%,IOF_%,Marketplace")
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
             df_import = pd.read_csv(arquivo)
             ultimo_id = df_produtos["ID"].max() if not df_produtos.empty else 0
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
-            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]]
+            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace"]]
             df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
             salvar_produtos(df_produtos)
             st.success(f"✅ {len(df_import)} produtos importados!")
