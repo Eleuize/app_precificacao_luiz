@@ -69,8 +69,7 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-# ========== BARRA LATERAL COM O NOVO TÍTULO ==========
-st.sidebar.image("logo.png", width=150)
+st.sidebar.image("logo.jpg", width=220)
 
 st.sidebar.markdown("""
 <h1 style='font-size: 28px; margin-bottom: 2px; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
