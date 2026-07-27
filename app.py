@@ -19,18 +19,19 @@ st.markdown("""
     .stTextInput > div > div > input { border-radius: 8px; }
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    
-    /* ===== CORREÇÃO PARA TELAS PEQUENAS (CELULAR/TABLET) ===== */
-    @media (max-width: 767px) {
-        .st-emotion-cache-1wrcq8g, .st-emotion-cache-1n1i9cu, .st-emotion-cache-1r4qj8v {
-            color: #000000 !important;
-        }
-        .st-emotion-cache-1r4qj8v a, .st-emotion-cache-1r4qj8v span {
-            color: #000000 !important;
-        }
-        .stSidebar {
-            background-color: #f0f2f6 !important;
-        }
+
+    /* ===== CORREÇÃO DEFINITIVA PARA O MENU (TODOS OS DISPOSITIVOS) ===== */
+    [data-testid="stSidebar"] {
+        background-color: #f0f2f6 !important;
+    }
+    [data-testid="stSidebar"] .st-emotion-cache-1wrcq8g,
+    [data-testid="stSidebar"] .st-emotion-cache-1r4qj8v,
+    [data-testid="stSidebar"] .st-emotion-cache-1n1i9cu {
+        color: #000000 !important;
+    }
+    [data-testid="stSidebar"] a,
+    [data-testid="stSidebar"] span {
+        color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
