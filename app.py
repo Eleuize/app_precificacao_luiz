@@ -80,8 +80,8 @@ def calcular_preco(row, config, vendas_mes):
 st.sidebar.image("logo.png", width=220)
 
 st.sidebar.markdown("""
-<h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
-<p style='font-size: 14px; color: gray; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
+<h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px; color: black;'>CALC MARKUP</h1>
+<p style='font-size: 14px; color: #333333; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
 """, unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
