@@ -137,7 +137,7 @@ elif pagina == "📝 Cadastrar Produto":
             novo_produto = pd.DataFrame({
                 "ID": [novo_id], "Nome": [nome], "Custo_USD": [custo_usd], "Frete_USD": [frete_usd],
                 "Embalagem_R$": [embalagem], "II_%": [ii], "IPI_%": [ipi], "ICMS_%": [icms],
-                "PIS_%": [pis], "COFINS_%": [cofins], "IOF_%": [iof], "Marketplace": [marketplace]
+                "PIS_%": [pis], "COFINS_": [cofins], "IOF_": [iof], "Marketplace": [marketplace]
             })
             df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
             salvar_produtos(df_produtos)
@@ -145,14 +145,14 @@ elif pagina == "📝 Cadastrar Produto":
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
-    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_%,IOF_%,Marketplace")
+    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace")
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
             df_import = pd.read_csv(arquivo)
             ultimo_id = df_produtos["ID"].max() if not df_produtos.empty else 0
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
-            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace"]]
+            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]]
             df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
             salvar_produtos(df_produtos)
             st.success(f"✅ {len(df_import)} produtos importados!")
