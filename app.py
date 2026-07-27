@@ -98,30 +98,11 @@ if pagina == "🏠 Início":
     <style>
         .stApp {
             background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/P%C3%A1gina%20Inicial.png");
+            background-size: 55% auto;
             background-position: center center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            background-color: #f0f2f6;
         }
-        
-        @media (min-width: 1024px) {
-            .stApp {
-                background-size: 65% auto;
-            }
-        }
-        
-        @media (min-width: 600px) and (max-width: 1023px) {
-            .stApp {
-                background-size: 80% auto;
-            }
-        }
-        
-        @media (max-width: 599px) {
-            .stApp {
-                background-size: 95% auto;
-            }
-        }
-        
         .stSidebar {
             background-color: rgba(240, 242, 246, 0.95);
         }
