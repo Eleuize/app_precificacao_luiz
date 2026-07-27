@@ -19,20 +19,6 @@ st.markdown("""
     .stTextInput > div > div > input { border-radius: 8px; }
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-
-    /* ===== CORREÇÃO DEFINITIVA PARA O MENU (TODOS OS DISPOSITIVOS) ===== */
-    [data-testid="stSidebar"] {
-        background-color: #f0f2f6 !important;
-    }
-    [data-testid="stSidebar"] .st-emotion-cache-1wrcq8g,
-    [data-testid="stSidebar"] .st-emotion-cache-1r4qj8v,
-    [data-testid="stSidebar"] .st-emotion-cache-1n1i9cu {
-        color: #000000 !important;
-    }
-    [data-testid="stSidebar"] a,
-    [data-testid="stSidebar"] span {
-        color: #000000 !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -94,8 +80,8 @@ def calcular_preco(row, config, vendas_mes):
 st.sidebar.image("logo.png", width=220)
 
 st.sidebar.markdown("""
-<h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px; color: black;'>CALC MARKUP</h1>
-<p style='font-size: 14px; color: #333333; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
+<h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
+<p style='font-size: 14px; color: gray; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
 """, unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
@@ -300,28 +286,3 @@ elif pagina == "⚙️ Configurações":
         with open("config.json", "w") as f:
             json.dump(config, f)
         st.success("✅ Configurações salvas!")
-
-    # ========== SEÇÃO DO MANUAL DO USUÁRIO ==========
-    st.markdown("---")
-    st.subheader("📘 Manual do Usuário")
-    
-    # Botão para baixar o PDF
-    try:
-        with open("Manual_CALC_MARKUP.pdf", "rb") as f:
-            st.download_button(
-                label="📥 Baixar Manual do Usuário (PDF)",
-                data=f,
-                file_name="Manual_CALC_MARKUP.pdf",
-                mime="application/pdf"
-            )
-    except FileNotFoundError:
-        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado. Certifique-se de que ele foi enviado para o repositório do GitHub.")
-    
-    # Link para visualizar online
-    st.markdown("""
-    <br>
-    <p>Você também pode visualizar o manual online clicando no link abaixo:</p>
-    <a href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf" target="_blank">
-        📖 Abrir Manual do Usuário Online
-    </a>
-    """, unsafe_allow_html=True)
