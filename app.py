@@ -90,7 +90,7 @@ if pagina == "🏠 Início":
     <style>
         .stApp {
             background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/P%C3%A1gina%20Inicial.png");
-            background-size: 70% auto;
+            background-size: 60% auto;
             background-position: center center;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -105,11 +105,11 @@ if pagina == "🏠 Início":
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div style='text-align: center; padding-top: 80px;'>
-        <div style='background-color: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 20px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1);'>
-            <h1 style='color: #333; font-size: 42px; font-weight: bold; margin: 0;'>Bem-vindo ao CALC MARKUP</h1>
-            <p style='color: #555; font-size: 18px; margin-top: 10px;'>Sua ferramenta inteligente para precificar importações.</p>
-            <p style='color: #777; font-size: 14px; margin-top: 5px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>
+    <div style='text-align: center; padding-top: 220px;'>
+        <div style='background-color: rgba(255, 255, 255, 0.85); padding: 30px 50px; border-radius: 20px; display: inline-block; box-shadow: 0 8px 30px rgba(0,0,0,0.2);'>
+            <h1 style='color: #1a1a1a; font-size: 44px; font-weight: bold; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.05);'>Bem-vindo ao CALC MARKUP</h1>
+            <p style='color: #222; font-size: 20px; margin-top: 10px; font-weight: 500;'>Sua ferramenta inteligente para precificar importações.</p>
+            <p style='color: #444; font-size: 16px; margin-top: 10px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
