@@ -50,15 +50,11 @@ def salvar_produtos(df):
     
     # ========== BACKUP AUTOMÁTICO ==========
     try:
-        # Cria o nome do arquivo com a data e hora atual
         agora = datetime.now().strftime("%Y-%m-%d_%H-%M")
         nome_backup = f"backups/{agora}_produtos.csv"
-        
-        # Salva a cópia de backup na pasta backups
         df.to_csv(nome_backup, index=False)
-        print(f"Backup salvo com sucesso: {nome_backup}")
     except Exception as e:
-        print(f"Erro ao salvar backup: {e}")
+        pass
 
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
@@ -117,11 +113,11 @@ if pagina == "🏠 Início":
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div style='text-align: center; padding-top: 220px;'>
-        <div style='background-color: rgba(255, 255, 255, 0.85); padding: 30px 50px; border-radius: 20px; display: inline-block; box-shadow: 0 8px 30px rgba(0,0,0,0.2);'>
-            <h1 style='color: #1a1a1a; font-size: 44px; font-weight: bold; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.05);'>Bem-vindo ao CALC MARKUP</h1>
-            <p style='color: #222; font-size: 22px; margin-top: 6px; font-weight: 500;'>Sua ferramenta inteligente para precificar importações.</p>
-            <p style='color: #444; font-size: 18px; margin-top: 4px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>
+    <div style='text-align: center; padding-top: 300px;'>
+        <div style='background-color: rgba(255, 255, 255, 0.88); padding: 25px 45px; border-radius: 20px; display: inline-block; box-shadow: 0 8px 30px rgba(0,0,0,0.2);'>
+            <h1 style='color: #1a1a1a; font-size: 42px; font-weight: bold; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.05);'>Bem-vindo ao CALC MARKUP</h1>
+            <p style='color: #222; font-size: 20px; margin-top: 2px; font-weight: 500;'>Sua ferramenta inteligente para precificar importações.</p>
+            <p style='color: #444; font-size: 16px; margin-top: 2px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -141,15 +137,15 @@ elif pagina == "📝 Cadastrar Produto":
             ipi = st.number_input("IPI %", min_value=0.0, step=0.1)
             icms = st.number_input("ICMS %", min_value=0.0, step=0.1)
             pis = st.number_input("PIS %", min_value=0.0, step=0.1)
-            cofins = st.number_input("COFINS %", min_value=0.0, step=0.1)
-            iof = st.number_input("IOF %", min_value=0.0, step=0.1)
+            cofins = st.number_input("COFINS", min_value=0.0, step=0.1)
+            iof = st.number_input("IOF", min_value=0.0, step=0.1)
         submit = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
         if submit:
             novo_id = df_produtos["ID"].max() + 1 if not df_produtos.empty else 1
             novo_produto = pd.DataFrame({
                 "ID": [novo_id], "Nome": [nome], "Custo_USD": [custo_usd], "Frete_USD": [frete_usd],
                 "Embalagem_R$": [embalagem], "II_%": [ii], "IPI_%": [ipi], "ICMS_%": [icms],
-                "PIS_%": [pis], "COFINS_%": [cofins], "IOF_%": [iof], "Marketplace": [marketplace]
+                "PIS_%": [pis], "COFINS_": [cofins], "IOF_": [iof], "Marketplace": [marketplace]
             })
             df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
             salvar_produtos(df_produtos)
@@ -157,14 +153,14 @@ elif pagina == "📝 Cadastrar Produto":
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
-    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_%,IOF_%,Marketplace")
+    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace")
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
             df_import = pd.read_csv(arquivo)
             ultimo_id = df_produtos["ID"].max() if not df_produtos.empty else 0
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
-            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace"]]
+            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]]
             df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
             salvar_produtos(df_produtos)
             st.success(f"✅ {len(df_import)} produtos importados!")
