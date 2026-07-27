@@ -286,3 +286,28 @@ elif pagina == "⚙️ Configurações":
         with open("config.json", "w") as f:
             json.dump(config, f)
         st.success("✅ Configurações salvas!")
+
+    # ========== SEÇÃO DO MANUAL DO USUÁRIO ==========
+    st.markdown("---")
+    st.subheader("📘 Manual do Usuário")
+    
+    # Botão para baixar o PDF
+    try:
+        with open("Manual_CALC_MARKUP.pdf", "rb") as f:
+            st.download_button(
+                label="📥 Baixar Manual do Usuário (PDF)",
+                data=f,
+                file_name="Manual_CALC_MARKUP.pdf",
+                mime="application/pdf"
+            )
+    except FileNotFoundError:
+        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado. Certifique-se de que ele foi enviado para o repositório do GitHub.")
+    
+    # Link para visualizar online
+    st.markdown("""
+    <br>
+    <p>Você também pode visualizar o manual online clicando no link abaixo:</p>
+    <a href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf" target="_blank">
+        📖 Abrir Manual do Usuário Online
+    </a>
+    """, unsafe_allow_html=True)
