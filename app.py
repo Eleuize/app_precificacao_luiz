@@ -90,13 +90,13 @@ if pagina == "🏠 Início":
     <style>
         .stApp {
             background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/P%C3%A1gina%20Inicial.png");
-            background-size: cover;
-            background-position: center;
+            background-size: 70% auto;
+            background-position: center center;
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
         .stSidebar {
-            background-color: rgba(240, 242, 246, 0.9);
+            background-color: rgba(240, 242, 246, 0.95);
         }
         .st-emotion-cache-1wrcq8g {
             background: transparent !important;
@@ -104,9 +104,15 @@ if pagina == "🏠 Início":
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown("<h1 style='text-align: center; color: #333; padding-top: 100px; font-size: 48px; font-weight: bold;'>Bem-vindo ao CALC MARKUP</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #555; font-size: 20px;'>Sua ferramenta inteligente para precificar importações.</p>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #777; font-size: 16px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align: center; padding-top: 80px;'>
+        <div style='background-color: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 20px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1);'>
+            <h1 style='color: #333; font-size: 42px; font-weight: bold; margin: 0;'>Bem-vindo ao CALC MARKUP</h1>
+            <p style='color: #555; font-size: 18px; margin-top: 10px;'>Sua ferramenta inteligente para precificar importações.</p>
+            <p style='color: #777; font-size: 14px; margin-top: 5px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 elif pagina == "📝 Cadastrar Produto":
     st.title("📝 Cadastrar Novo Produto")
