@@ -12,9 +12,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ========== FORÇAR O TEMA CLARO (CORREÇÃO DO MODO ESCURO) ==========
-st.set_option('theme.base', 'light')
-
 st.markdown("""
 <style>
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
@@ -22,6 +19,19 @@ st.markdown("""
     .stTextInput > div > div > input { border-radius: 8px; }
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    
+    /* ===== CORREÇÃO PARA TELAS PEQUENAS (CELULAR/TABLET) ===== */
+    @media (max-width: 767px) {
+        .st-emotion-cache-1wrcq8g, .st-emotion-cache-1n1i9cu, .st-emotion-cache-1r4qj8v {
+            color: #000000 !important;
+        }
+        .st-emotion-cache-1r4qj8v a, .st-emotion-cache-1r4qj8v span {
+            color: #000000 !important;
+        }
+        .stSidebar {
+            background-color: #f0f2f6 !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
