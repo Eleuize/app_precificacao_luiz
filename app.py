@@ -78,14 +78,37 @@ st.sidebar.markdown("""
 
 pagina = st.sidebar.radio(
     "Navegação",
-    ["📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+    ["🏠 Início", "📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
 )
 
 config = carregar_config()
 df_produtos = carregar_produtos()
 vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
 
-if pagina == "📝 Cadastrar Produto":
+if pagina == "🏠 Início":
+    st.markdown("""
+    <style>
+        .stApp {
+            background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/P%C3%A1gina%20Inicial.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .stSidebar {
+            background-color: rgba(240, 242, 246, 0.9);
+        }
+        .st-emotion-cache-1wrcq8g {
+            background: transparent !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<h1 style='text-align: center; color: #333; padding-top: 100px; font-size: 48px; font-weight: bold;'>Bem-vindo ao CALC MARKUP</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #555; font-size: 20px;'>Sua ferramenta inteligente para precificar importações.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #777; font-size: 16px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>", unsafe_allow_html=True)
+
+elif pagina == "📝 Cadastrar Produto":
     st.title("📝 Cadastrar Novo Produto")
     with st.form("form_produto"):
         col1, col2 = st.columns(2)
