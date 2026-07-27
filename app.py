@@ -97,34 +97,31 @@ if pagina == "🏠 Início":
     st.markdown("""
     <style>
         .stApp {
-            background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/inicial.png");
+            background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/P%C3%A1gina%20Inicial.png");
             background-position: center center;
             background-repeat: no-repeat;
             background-attachment: fixed;
             background-color: #f0f2f6;
         }
         
-        /* Tamanho para computadores (telas grandes) */
         @media (min-width: 1024px) {
             .stApp {
                 background-size: 65% auto;
             }
         }
         
-        /* Tamanho para tablets (telas médias) */
         @media (min-width: 600px) and (max-width: 1023px) {
             .stApp {
-                background-size: 85% auto;
+                background-size: 80% auto;
             }
         }
         
-        /* Tamanho para smartphones (telas pequenas) */
         @media (max-width: 599px) {
             .stApp {
-                background-size: 100% auto;
+                background-size: 95% auto;
             }
         }
-
+        
         .stSidebar {
             background-color: rgba(240, 242, 246, 0.95);
         }
