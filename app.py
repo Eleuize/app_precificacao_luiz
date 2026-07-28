@@ -6,101 +6,6 @@ import json
 import os
 from datetime import datetime
 
-# ================== CONFIGURAÇÃO DE SENHA ==================
-# Se você quiser que o App funcione sem senha para testes, mude isso para False
-SENHA_OBRIGATORIA = False
-
-# ================== GESTÃO DE USUÁRIOS ==================
-def carregar_usuarios():
-    if os.path.exists("usuarios.json"):
-        with open("usuarios.json", "r") as f:
-            return json.load(f)
-    return {}
-
-def salvar_usuarios(usuarios):
-    with open("usuarios.json", "w") as f:
-        json.dump(usuarios, f)
-
-def registrar_usuario(nome, usuario, senha):
-    usuarios = carregar_usuarios()
-    if usuario in usuarios:
-        return False, "Usuário já existe. Escolha outro."
-    usuarios[usuario] = {"nome": nome, "senha": senha}
-    salvar_usuarios(usuarios)
-    return True, "Cadastro realizado com sucesso!"
-
-def verificar_login(usuario, senha):
-    usuarios = carregar_usuarios()
-    if usuario in usuarios and usuarios[usuario]["senha"] == senha:
-        return True, usuarios[usuario]["nome"]
-    return False, None
-
-# ================== LÓGICA DE AUDITORIA ==================
-def carregar_produtos():
-    if os.path.exists("produtos.csv"):
-        return pd.read_csv("produtos.csv")
-    else:
-        df = pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Registrado_Por", "Data_Hora"])
-        df.to_csv("produtos.csv", index=False)
-        return df
-
-def salvar_produtos(df, usuario_nome):
-    df.to_csv("produtos.csv", index=False)
-    
-    # ========== BACKUP AUTOMÁTICO ==========
-    try:
-        agora = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        nome_backup = f"backups/{agora}_produtos.csv"
-        df.to_csv(nome_backup, index=False)
-    except Exception as e:
-        pass
-
-# ================== TELA DE LOGIN ==================
-if SENHA_OBRIGATORIA:
-    if "logado" not in st.session_state:
-        st.session_state.logado = False
-        st.session_state.usuario_nome = ""
-
-    if not st.session_state.logado:
-        st.set_page_config(page_title="Login | CALC MARKUP", page_icon="🔒")
-        
-        st.title("🔒 Acesso ao CALC MARKUP")
-        st.markdown("---")
-        
-        aba = st.tabs(["🔐 Login", "📝 Cadastro"])
-        
-        with aba[0]:
-            usuario = st.text_input("Usuário", key="login_user")
-            senha = st.text_input("Senha", type="password", key="login_pass")
-            if st.button("Entrar"):
-                if usuario and senha:
-                    valido, nome = verificar_login(usuario, senha)
-                    if valido:
-                        st.session_state.logado = True
-                        st.session_state.usuario_nome = nome
-                        st.rerun()
-                    else:
-                        st.error("Usuário ou senha incorretos.")
-                else:
-                    st.warning("Preencha todos os campos.")
-        
-        with aba[1]:
-            novo_nome = st.text_input("Nome Completo", key="reg_nome")
-            novo_usuario = st.text_input("Usuário", key="reg_user")
-            nova_senha = st.text_input("Senha", type="password", key="reg_pass")
-            if st.button("Cadastrar"):
-                if novo_nome and novo_usuario and nova_senha:
-                    sucesso, msg = registrar_usuario(novo_nome, novo_usuario, nova_senha)
-                    if sucesso:
-                        st.success(msg)
-                        st.info("Agora faça login com seu novo usuário.")
-                    else:
-                        st.error(msg)
-                else:
-                    st.warning("Preencha todos os campos.")
-        st.stop()
-
-# ================== CONFIGURAÇÃO DA PÁGINA PRINCIPAL ==================
 st.set_page_config(
     page_title="CALC MARKUP | LM Importing",
     page_icon="📦",
@@ -146,6 +51,25 @@ def carregar_config():
         with open("config.json", "w") as f:
             json.dump(config, f)
         return config
+
+def carregar_produtos():
+    if os.path.exists("produtos.csv"):
+        return pd.read_csv("produtos.csv")
+    else:
+        df = pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Registrado_Por", "Data_Hora"])
+        df.to_csv("produtos.csv", index=False)
+        return df
+
+def salvar_produtos(df):
+    df.to_csv("produtos.csv", index=False)
+    
+    # ========== BACKUP AUTOMÁTICO ==========
+    try:
+        agora = datetime.now().strftime("%Y-%m-%d_%H-%M")
+        nome_backup = f"backups/{agora}_produtos.csv"
+        df.to_csv(nome_backup, index=False)
+    except Exception as e:
+        pass
 
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
@@ -244,8 +168,8 @@ elif pagina == "📝 Cadastrar Produto":
                 "Data_Hora": [datetime.now().strftime("%d/%m/%Y %H:%M")]
             })
             df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
-            salvar_produtos(df_produtos, st.session_state.usuario_nome)
-            st.success(f"✅ Produto '{nome}' cadastrado por {st.session_state.usuario_nome}!")
+            salvar_produtos(df_produtos)
+            st.success(f"✅ Produto '{nome}' cadastrado!")
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
@@ -257,14 +181,9 @@ elif pagina == "📥 Importar CSV":
             ultimo_id = df_produtos["ID"].max() if not df_produtos.empty else 0
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
             df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]]
-            
-            # Adiciona colunas de auditoria
-            df_import["Registrado_Por"] = st.session_state.usuario_nome
-            df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-            
             df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
-            salvar_produtos(df_produtos, st.session_state.usuario_nome)
-            st.success(f"✅ {len(df_import)} produtos importados por {st.session_state.usuario_nome}!")
+            salvar_produtos(df_produtos)
+            st.success(f"✅ {len(df_import)} produtos importados!")
         except Exception as e:
             st.error(f"Erro: {e}")
 
@@ -278,11 +197,8 @@ elif pagina == "📦 Produtos":
         with st.expander("🗑️ Deletar Produto"):
             produto_del = st.selectbox("Selecione o produto", df_produtos["Nome"].tolist())
             if st.button("Deletar", type="primary"):
-                # Registra quem deletou
-                removido = df_produtos[df_produtos["Nome"] == produto_del]
-                st.info(f"Produto deletado por {st.session_state.usuario_nome} em {datetime.now().strftime('%d/%m/%Y %H:%M')}")
                 df_produtos = df_produtos[df_produtos["Nome"] != produto_del]
-                salvar_produtos(df_produtos, st.session_state.usuario_nome)
+                salvar_produtos(df_produtos)
                 st.rerun()
     else:
         st.info("Nenhum produto cadastrado.")
@@ -310,14 +226,18 @@ elif pagina == "🏠 Dashboard":
         df_pizza = df_res.groupby(df_produtos["Marketplace"])["Lucro_R$"].sum().reset_index()
         df_pizza.columns = ["Marketplace", "Lucro_R$"]
         
-        cores_marketplace = {"Mercado Livre": "#FFD700", "Shopee": "#FF8C00", "Amazon": "#1A1A1A"}
+        cores_marketplace = {
+            "Mercado Livre": "#FFD700",
+            "Shopee": "#FF8C00",
+            "Amazon": "#1A1A1A"
+        }
         
         fig_pizza = go.Figure(data=[go.Pie(
             labels=df_pizza["Marketplace"],
             values=df_pizza["Lucro_R$"],
             marker=dict(
                 colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]],
-                line=dict(color='#000000', width=2)
+                line=dict(color='#FFFFFF', width=3)  # BORDA BRANCA
             ),
             textinfo='label+percent',
             textfont=dict(size=20, color='white'),
@@ -329,10 +249,22 @@ elif pagina == "🏠 Dashboard":
             height=600,
             width=900,
             margin=dict(l=20, r=20, t=40, b=20),
-            scene=dict(camera=dict(eye=dict(x=1.5, y=1.5, z=1.5))),
+            scene=dict(
+                camera=dict(
+                    eye=dict(x=1.5, y=1.5, z=1.5)
+                )
+            ),
             showlegend=True,
-            legend=dict(font=dict(size=16, color='black'))
+            legend=dict(
+                font=dict(size=16, color='white'),
+                bgcolor='#2c2c2c',  # CINZA CHUMBO
+                bordercolor='#FFFFFF',  # BORDA BRANCA
+                borderwidth=2,
+                itemsizing='constant',
+                itemwidth=40
+            )
         )
+        
         st.plotly_chart(fig_pizza, use_container_width=True)
     else:
         st.info("Nenhum produto cadastrado.")
@@ -422,25 +354,3 @@ elif pagina == "⚙️ Configurações":
         with open("config.json", "w") as f:
             json.dump(config, f)
         st.success("✅ Configurações salvas!")
-
-elif pagina == "📋 Auditoria":
-    st.title("📋 Histórico de Ações")
-    if not df_produtos.empty:
-        # Filtra apenas as colunas que interessam para auditoria
-        df_auditoria = df_produtos[["Nome", "Registrado_Por", "Data_Hora", "Marketplace"]]
-        st.dataframe(df_auditoria, use_container_width=True, height=400)
-        
-        st.markdown("---")
-        st.subheader("📊 Estatísticas de Uso")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write(f"**Total de registros:** {len(df_auditoria)}")
-        with col2:
-            usuarios_ativos = df_auditoria["Registrado_Por"].nunique()
-            st.write(f"**Usuários ativos:** {usuarios_ativos}")
-        
-        if st.button("📥 Exportar Auditoria para Excel"):
-            df_auditoria.to_excel("auditoria_exportada.xlsx", index=False)
-            st.success("Auditoria exportada!")
-    else:
-        st.info("Nenhum registro de auditoria encontrado.")
