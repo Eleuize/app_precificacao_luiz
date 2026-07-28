@@ -212,26 +212,47 @@ elif pagina == "🏠 Dashboard":
         fig = px.bar(df_res, x=df_produtos["Nome"], y=["Preco_Final_R$", "Lucro_R$"], barmode="group", title="Preço Final vs Lucro por Produto")
         st.plotly_chart(fig, use_container_width=True)
         
-        # ===== NOVO GRÁFICO DE PIZZA (Marketplaces) =====
-        st.subheader("🍕 Participação de cada Marketplace no Lucro Total")
-        # Agrupa o lucro por marketplace usando o dataframe de resultados (df_res)
+        # ===== GRÁFICO DE PIZZA PERSONALIZADO (Marketplaces) =====
+        st.subheader("Participação de cada Marketplace no Lucro Total")
+        
+        # Agrupa o lucro por marketplace
         df_pizza = df_res.groupby(df_produtos["Marketplace"])["Lucro_R$"].sum().reset_index()
         df_pizza.columns = ["Marketplace", "Lucro_R$"]
+        
+        # Mapeamento de cores personalizado
+        cores_marketplace = {
+            "Mercado Livre": "#FFD700",   # Amarelo Ouro (Mercado Livre)
+            "Shopee": "#FF8C00",          # Laranja (Shopee)
+            "Amazon": "#1A1A1A"           # Preto Fosco (Amazon)
+        }
+        
+        # Cria a lista de cores na ordem dos dados
+        ordem_cores = df_pizza["Marketplace"].map(cores_marketplace).tolist()
         
         fig_pizza = px.pie(
             df_pizza,
             names="Marketplace",
             values="Lucro_R$",
             title="Distribuição do Lucro por Marketplace",
-            color_discrete_sequence=px.colors.qualitative.Set2,
-            hole=0.1
+            color="Marketplace",
+            color_discrete_map=cores_marketplace
         )
-        # Aumenta o tamanho do gráfico
+        
+        # Ajustes visuais: letras maiores e efeito 3D
+        fig_pizza.update_traces(
+            textinfo='label+percent',
+            textfont_size=20,
+            marker=dict(line=dict(color='#000000', width=3))
+        )
+        
         fig_pizza.update_layout(
-            height=500,
-            width=800,
-            margin=dict(l=20, r=20, t=40, b=20)
+            height=550,
+            width=850,
+            margin=dict(l=20, r=20, t=50, b=20),
+            showlegend=True,
+            legend=dict(font=dict(size=16))
         )
+        
         st.plotly_chart(fig_pizza, use_container_width=True)
         
     else:
@@ -241,7 +262,7 @@ elif pagina == "🧮 Simulador":
     st.title("🧮 Simulador de Preço e Margem")
     if not df_produtos.empty:
         produto_sel = st.selectbox("Selecione um produto", df_produtos["Nome"].tolist())
-        row = df_produtos[df_produtos["Nome"] == prodotto_sel].iloc[0]
+        row = df_produtos[df_produtos["Nome"] == produto_sel].iloc[0]
         col1, col2 = st.columns(2)
         with col1:
             preco_sugerido = st.number_input("Preço sugerido (R$)", min_value=1.0, step=1.0)
