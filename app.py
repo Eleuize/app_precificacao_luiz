@@ -20,30 +20,18 @@ st.markdown("""
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-    /* ===== MENU PADRÃO (NOTEBOOK E TELAS GRANDES) ===== */
+    /* ===== MENU PADRÃO (CINZA CHUMBO COM LETRAS BRANCAS) ===== */
     [data-testid="stSidebar"] {
-        background-color: rgba(240, 242, 246, 0.95) !important;
+        background-color: #2c2c2c !important;
     }
     [data-testid="stSidebar"] .st-emotion-cache-1wrcq8g,
     [data-testid="stSidebar"] .st-emotion-cache-1r4qj8v,
     [data-testid="stSidebar"] .st-emotion-cache-1n1i9cu {
-        color: #000000 !important;
+        color: #FFFFFF !important;
     }
-
-    /* ===== MENU ESCURO COM LETRAS BRANCAS PARA CELULAR E TABLET ===== */
-    @media (max-width: 767px) {
-        [data-testid="stSidebar"] {
-            background-color: #2c2c2c !important;
-        }
-        [data-testid="stSidebar"] .st-emotion-cache-1wrcq8g,
-        [data-testid="stSidebar"] .st-emotion-cache-1r4qj8v,
-        [data-testid="stSidebar"] .st-emotion-cache-1n1i9cu {
-            color: #FFFFFF !important;
-        }
-        [data-testid="stSidebar"] a,
-        [data-testid="stSidebar"] span {
-            color: #FFFFFF !important;
-        }
+    [data-testid="stSidebar"] a,
+    [data-testid="stSidebar"] span {
+        color: #FFFFFF !important;
     }
 </style>
 """, unsafe_allow_html=True)
