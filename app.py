@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 import json
 import os
 from datetime import datetime
@@ -212,45 +212,46 @@ elif pagina == "🏠 Dashboard":
         fig = px.bar(df_res, x=df_produtos["Nome"], y=["Preco_Final_R$", "Lucro_R$"], barmode="group", title="Preço Final vs Lucro por Produto")
         st.plotly_chart(fig, use_container_width=True)
         
-        # ===== GRÁFICO DE PIZZA PERSONALIZADO (Marketplaces) =====
+        # ===== GRÁFICO DE PIZZA 3D REAL =====
         st.subheader("Participação de cada Marketplace no Lucro Total")
         
         # Agrupa o lucro por marketplace
         df_pizza = df_res.groupby(df_produtos["Marketplace"])["Lucro_R$"].sum().reset_index()
         df_pizza.columns = ["Marketplace", "Lucro_R$"]
         
-        # Mapeamento de cores personalizado
+        # Cores personalizadas
         cores_marketplace = {
-            "Mercado Livre": "#FFD700",   # Amarelo Ouro (Mercado Livre)
-            "Shopee": "#FF8C00",          # Laranja (Shopee)
-            "Amazon": "#1A1A1A"           # Preto Fosco (Amazon)
+            "Mercado Livre": "#FFD700",   # Amarelo
+            "Shopee": "#FF8C00",          # Laranja
+            "Amazon": "#1A1A1A"          # Preto
         }
         
-        # Cria a lista de cores na ordem dos dados
-        ordem_cores = df_pizza["Marketplace"].map(cores_marketplace).tolist()
-        
-        fig_pizza = px.pie(
-            df_pizza,
-            names="Marketplace",
-            values="Lucro_R$",
-            title="Distribuição do Lucro por Marketplace",
-            color="Marketplace",
-            color_discrete_map=cores_marketplace
-        )
-        
-        # Ajustes visuais: letras maiores e efeito 3D
-        fig_pizza.update_traces(
+        # Criando o gráfico 3D com graph_objects
+        fig_pizza = go.Figure(data=[go.Pie(
+            labels=df_pizza["Marketplace"],
+            values=df_pizza["Lucro_R$"],
+            hole=0.1,
+            marker=dict(
+                colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]],
+                line=dict(color='#000000', width=2)
+            ),
             textinfo='label+percent',
-            textfont_size=20,
-            marker=dict(line=dict(color='#000000', width=3))
-        )
+            textfont=dict(size=20, color='white'),
+            sort=False
+        )])
         
+        # Aplicando o efeito 3D REAL com perspectiva
         fig_pizza.update_layout(
-            height=550,
-            width=850,
-            margin=dict(l=20, r=20, t=50, b=20),
+            height=600,
+            width=900,
+            margin=dict(l=20, r=20, t=40, b=20),
+            scene=dict(
+                camera=dict(
+                    eye=dict(x=1.5, y=1.5, z=1.5)
+                )
+            ),
             showlegend=True,
-            legend=dict(font=dict(size=16))
+            legend=dict(font=dict(size=16, color='black'))
         )
         
         st.plotly_chart(fig_pizza, use_container_width=True)
