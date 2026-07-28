@@ -34,6 +34,21 @@ st.markdown("""
     [data-testid="stSidebar"] p {
         color: #cccccc !important;
     }
+
+    /* ===== CORREÇÃO DA BARRA DE VENDAS (PRETA BRILHOSA) ===== */
+    div[data-testid="stNumberInput"] {
+        background-color: #1a1a1a !important;
+        border-radius: 8px !important;
+        border: 1px solid #ffffff33 !important;
+        padding: 5px !important;
+    }
+    div[data-testid="stNumberInput"] label {
+        color: #ffffff !important;
+    }
+    div[data-testid="stNumberInput"] input {
+        color: #ffffff !important;
+        background-color: #1a1a1a !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -237,7 +252,7 @@ elif pagina == "🏠 Dashboard":
             values=df_pizza["Lucro_R$"],
             marker=dict(
                 colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]],
-                line=dict(color='#FFFFFF', width=3)  # BORDA BRANCA
+                line=dict(color='#FFFFFF', width=3)
             ),
             textinfo='label+percent',
             textfont=dict(size=20, color='white'),
@@ -257,8 +272,8 @@ elif pagina == "🏠 Dashboard":
             showlegend=True,
             legend=dict(
                 font=dict(size=16, color='white'),
-                bgcolor='#2c2c2c',  # CINZA CHUMBO
-                bordercolor='#FFFFFF',  # BORDA BRANCA
+                bgcolor='#2c2c2c',
+                bordercolor='#FFFFFF',
                 borderwidth=2,
                 itemsizing='constant',
                 itemwidth=40
@@ -354,3 +369,28 @@ elif pagina == "⚙️ Configurações":
         with open("config.json", "w") as f:
             json.dump(config, f)
         st.success("✅ Configurações salvas!")
+
+    # ========== SEÇÃO DO MANUAL DO USUÁRIO ==========
+    st.markdown("---")
+    st.subheader("📘 Manual do Usuário")
+    
+    # Botão para baixar o PDF
+    try:
+        with open("Manual_CALC_MARKUP.pdf", "rb") as f:
+            st.download_button(
+                label="📥 Baixar Manual do Usuário (PDF)",
+                data=f,
+                file_name="Manual_CALC_MARKUP.pdf",
+                mime="application/pdf"
+            )
+    except FileNotFoundError:
+        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado. Certifique-se de que ele foi enviado para o repositório do GitHub.")
+    
+    # Link para visualizar online
+    st.markdown("""
+    <br>
+    <p>Você também pode visualizar o manual online clicando no link abaixo:</p>
+    <a href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf" target="_blank">
+        📖 Abrir Manual do Usuário Online
+    </a>
+    """, unsafe_allow_html=True)
