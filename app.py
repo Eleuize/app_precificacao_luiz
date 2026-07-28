@@ -35,26 +35,37 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== CORREÇÃO EXATA: CAMPO DE VENDAS NO MENU E BOTÕES (- +) ===== */
-    /* 1. Fundo do retângulo onde aparece o número */
+    /* ===== CORREÇÃO DEFINITIVA: RÓTULO vs CAMPO ===== */
+    /* 1. Rótulo "Vendas estimadas no mês" - APENAS O TEXTO (fundo Cinza Chumbo) */
+    [data-testid="stSidebar"] label {
+        color: #ffffff !important;
+        background-color: #2c2c2c !important;
+        padding: 0px !important;
+    }
+
+    /* 2. O campo onde aparece o número (fundo Preto Fosco) */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
         border: 1px solid #333333 !important;
+        padding: 0px !important;
     }
-    /* 2. Cor do número digitado e do rótulo dentro do retângulo */
-    [data-testid="stSidebar"] div[data-testid="stNumberInput"] label,
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
+        background-color: #111111 !important;
+        border: none !important;
+        caret-color: #ffffff !important;
     }
-    /* 3. Cor dos botões de menos (-) e mais (+) dentro do retângulo */
+
+    /* 3. Os botões (- e +) também em preto */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
         border: 1px solid #444444 !important;
+        border-radius: 4px !important;
     }
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
-        background-color: #222222 !important;
+        background-color: #2c2c2c !important;
     }
 </style>
 """, unsafe_allow_html=True)
