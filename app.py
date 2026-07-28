@@ -223,7 +223,14 @@ elif pagina == "🏠 Dashboard":
             names="Marketplace",
             values="Lucro_R$",
             title="Distribuição do Lucro por Marketplace",
-            color_discrete_sequence=px.colors.qualitative.Set2
+            color_discrete_sequence=px.colors.qualitative.Set2,
+            hole=0.1
+        )
+        # Aumenta o tamanho do gráfico
+        fig_pizza.update_layout(
+            height=500,
+            width=800,
+            margin=dict(l=20, r=20, t=40, b=20)
         )
         st.plotly_chart(fig_pizza, use_container_width=True)
         
@@ -234,7 +241,7 @@ elif pagina == "🧮 Simulador":
     st.title("🧮 Simulador de Preço e Margem")
     if not df_produtos.empty:
         produto_sel = st.selectbox("Selecione um produto", df_produtos["Nome"].tolist())
-        row = df_produtos[df_produtos["Nome"] == produto_sel].iloc[0]
+        row = df_produtos[df_produtos["Nome"] == prodotto_sel].iloc[0]
         col1, col2 = st.columns(2)
         with col1:
             preco_sugerido = st.number_input("Preço sugerido (R$)", min_value=1.0, step=1.0)
