@@ -199,13 +199,34 @@ elif pagina == "🏠 Dashboard":
             res = calcular_preco(row, config, vendas_mes)
             resultados.append(res)
         df_res = pd.DataFrame(resultados)
+        
+        # ===== MÉTRICAS DO DASHBOARD =====
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Produtos", len(df_produtos))
         col2.metric("Faturamento Estimado", f"R$ {df_res['Preco_Final_R$'].sum():,.2f}")
         col3.metric("Lucro Total", f"R$ {df_res['Lucro_R$'].sum():,.2f}")
         col4.metric("ROI Médio", f"{df_res['ROI_%'].mean():.1f}%")
+        
+        # ===== GRÁFICO DE BARRAS =====
+        st.subheader("📊 Preço Final vs Lucro por Produto")
         fig = px.bar(df_res, x=df_produtos["Nome"], y=["Preco_Final_R$", "Lucro_R$"], barmode="group", title="Preço Final vs Lucro por Produto")
         st.plotly_chart(fig, use_container_width=True)
+        
+        # ===== NOVO GRÁFICO DE PIZZA (Marketplaces) =====
+        st.subheader("🍕 Participação de cada Marketplace no Lucro Total")
+        # Agrupa o lucro por marketplace
+        df_pizza = df_produtos.groupby("Marketplace")["Lucro_R$"].sum().reset_index()
+        df_pizza.columns = ["Marketplace", "Lucro_R$"]
+        
+        fig_pizza = px.pie(
+            df_pizza,
+            names="Marketplace",
+            values="Lucro_R$",
+            title="Distribuição do Lucro por Marketplace",
+            color_discrete_sequence=px.colors.qualitative.Set2
+        )
+        st.plotly_chart(fig_pizza, use_container_width=True)
+        
     else:
         st.info("Nenhum produto cadastrado.")
 
