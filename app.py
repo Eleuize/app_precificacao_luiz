@@ -12,6 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ================== ESTILOS GLOBAIS ==================
 st.markdown("""
 <style>
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
@@ -20,28 +21,17 @@ st.markdown("""
     .stSelectbox > div > div > select { border-radius: 8px; }
     .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-    /* ===== MENU PADRÃO (CINZA CHUMBO COM LETRAS BRANCAS) ===== */
+    /* ===== MENU LATERAL (CINZA CHUMBO COM LETRAS BRANCAS) ===== */
     [data-testid="stSidebar"] {
         background-color: #2c2c2c !important;
     }
-    [data-testid="stSidebar"] .st-emotion-cache-1wrcq8g,
-    [data-testid="stSidebar"] .st-emotion-cache-1r4qj8v,
-    [data-testid="stSidebar"] .st-emotion-cache-1n1i9cu {
+    /* Força as letras do menu a serem BRANCAS */
+    [data-testid="stSidebar"] * {
         color: #FFFFFF !important;
     }
-    [data-testid="stSidebar"] a,
-    [data-testid="stSidebar"] span {
-        color: #FFFFFF !important;
-    }
-    
-    /* ===== CORREÇÃO EXTRA PARA O NOTEBOOK (MENU) ===== */
-    .st-emotion-cache-1wrcq8g, 
-    .st-emotion-cache-1r4qj8v, 
-    .st-emotion-cache-1n1i9cu {
-        color: #FFFFFF !important;
-    }
-    a, span {
-        color: #FFFFFF !important;
+    /* Mantém o subtítulo "LM - Importing 2U®" em cinza claro para dar elegância */
+    [data-testid="stSidebar"] p {
+        color: #cccccc !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -105,7 +95,7 @@ st.sidebar.image("logo.png", width=220)
 
 st.sidebar.markdown("""
 <h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
-<p style='font-size: 14px; color: gray; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
+<p style='font-size: 14px; color: #cccccc; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
 """, unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
