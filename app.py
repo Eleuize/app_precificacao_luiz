@@ -35,23 +35,23 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== TARJA PRETA NO MENU (SEM NENHUM CONTORNO) ===== */
+    /* ===== TARJA PRETA NO MENU COM BORDA CINZA CHUMBO ===== */
     [data-testid="stSidebar"] label {
         color: #ffffff !important;
         background-color: #2c2c2c !important;
         padding: 0px !important;
     }
 
-    /* Container principal do campo */
+    /* Container principal do campo (com borda cinza chumbo) */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
-        border: none !important;
+        border: 1px solid #2c2c2c !important;  /* BORDA IGUAL AO MENU */
         padding: 0px !important;
         box-shadow: none !important;
     }
 
-    /* Campo de input */
+    /* Campo de input (sem bordas internas) */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
         background-color: #111111 !important;
@@ -61,11 +61,11 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* Botões (- e +) */
+    /* Botões (- e +) com borda cinza chumbo */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
-        border: none !important;
+        border: 1px solid #2c2c2c !important;  /* BORDA IGUAL AO MENU */
         outline: none !important;
         border-radius: 0px !important;
         box-shadow: none !important;
@@ -74,7 +74,7 @@ st.markdown("""
         background-color: #2c2c2c !important;
     }
 
-    /* ===== FORÇA A REMOÇÃO DE QUALQUER CONTORNO RESIDUAL ===== */
+    /* Força a remoção de qualquer contorno residual */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] * {
         outline: none !important;
         box-shadow: none !important;
