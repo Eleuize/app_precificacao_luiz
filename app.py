@@ -33,6 +33,16 @@ st.markdown("""
     [data-testid="stSidebar"] span {
         color: #FFFFFF !important;
     }
+    
+    /* ===== CORREÇÃO EXTRA PARA O NOTEBOOK ===== */
+    .st-emotion-cache-1wrcq8g, 
+    .st-emotion-cache-1r4qj8v, 
+    .st-emotion-cache-1n1i9cu {
+        color: #FFFFFF !important;
+    }
+    a, span {
+        color: #FFFFFF !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
