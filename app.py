@@ -35,19 +35,19 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== CORREÇÃO DA BARRA DE VENDAS (PRETA BRILHOSA) ===== */
-    div[data-testid="stNumberInput"] {
-        background-color: #1a1a1a !important;
+    /* ===== CORREÇÃO EXATA: CAMPO DE VENDAS NO MENU (PRETO FOSCO) ===== */
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
+        background-color: #111111 !important;
         border-radius: 8px !important;
-        border: 1px solid #ffffff33 !important;
+        border: 1px solid #333333 !important;
         padding: 5px !important;
     }
-    div[data-testid="stNumberInput"] label {
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] label {
         color: #ffffff !important;
     }
-    div[data-testid="stNumberInput"] input {
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
-        background-color: #1a1a1a !important;
+        background-color: #111111 !important;
     }
 </style>
 """, unsafe_allow_html=True)
