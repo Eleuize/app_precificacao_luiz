@@ -34,7 +34,7 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* ===== CORREÇÃO EXTRA PARA O NOTEBOOK ===== */
+    /* ===== CORREÇÃO EXTRA PARA O NOTEBOOK (MENU) ===== */
     .st-emotion-cache-1wrcq8g, 
     .st-emotion-cache-1r4qj8v, 
     .st-emotion-cache-1n1i9cu {
