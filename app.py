@@ -35,7 +35,7 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== TARJA PRETA NO MENU (SEM BORDAS) ===== */
+    /* ===== TARJA PRETA NO MENU (SEM BORDAS E SEM CONTORNO) ===== */
     [data-testid="stSidebar"] label {
         color: #ffffff !important;
         background-color: #2c2c2c !important;
@@ -46,21 +46,25 @@ st.markdown("""
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
-        border: none !important;   /* <=== BORDA REMOVIDA AQUI */
+        border: none !important;
         padding: 0px !important;
+        box-shadow: none !important;      /* <=== REMOVE SOMBRAS */
     }
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
         background-color: #111111 !important;
         border: none !important;
+        outline: none !important;         /* <=== REMOVE CONTORNO BRANCO */
         caret-color: #ffffff !important;
+        box-shadow: none !important;
     }
 
-    /* Botões (- e +) também pretos e SEM BORDA */
+    /* Botões (- e +) também pretos e SEM CONTORNO */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
-        border: none !important;   /* <=== BORDA REMOVIDA AQUI TAMBÉM */
+        border: none !important;
+        outline: none !important;         /* <=== REMOVE CONTORNO BRANCO */
         border-radius: 0px !important;
         box-shadow: none !important;
     }
