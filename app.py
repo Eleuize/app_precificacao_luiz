@@ -227,21 +227,21 @@ elif pagina == "🏠 Dashboard":
             "Amazon": "#1A1A1A"          # Preto
         }
         
-        # Criando o gráfico 3D com graph_objects
+        # Criando o gráfico 3D sólido com graph_objects
         fig_pizza = go.Figure(data=[go.Pie(
             labels=df_pizza["Marketplace"],
             values=df_pizza["Lucro_R$"],
-            hole=0.1,
             marker=dict(
                 colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]],
                 line=dict(color='#000000', width=2)
             ),
             textinfo='label+percent',
             textfont=dict(size=20, color='white'),
-            sort=False
+            sort=False,
+            pull=[0.05, 0.05, 0.05]  # Separa as fatias
         )])
         
-        # Aplicando o efeito 3D REAL com perspectiva
+        # Aplicando o efeito 3D REAL com perspectiva e sombra
         fig_pizza.update_layout(
             height=600,
             width=900,
@@ -252,7 +252,35 @@ elif pagina == "🏠 Dashboard":
                 )
             ),
             showlegend=True,
-            legend=dict(font=dict(size=16, color='black'))
+            legend=dict(font=dict(size=16, color='black')),
+            shapedefaults=dict(
+                fillcolor="rgba(0,0,0,0.45)",
+                line=dict(width=0),
+                opacity=0.45
+            ),
+            # Sombra no sentido sudeste
+            images=[dict(
+                source="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Blank.png/1px-Blank.png",
+                x=0, y=0, sizex=0, sizey=0,
+                layer="below"
+            )]
+        )
+        
+        # Aplicando sombra customizada via CSS (sudeste)
+        fig_pizza.update_layout(
+            margin=dict(l=20, r=20, t=40, b=20),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            # Sombra sudeste personalizada
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=0, y1=0,
+                    fillcolor="rgba(0,0,0,0)",
+                    line=dict(width=0)
+                )
+            ]
         )
         
         st.plotly_chart(fig_pizza, use_container_width=True)
