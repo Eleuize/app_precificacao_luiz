@@ -35,19 +35,26 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== CORREÇÃO EXATA: CAMPO DE VENDAS NO MENU (PRETO FOSCO) ===== */
+    /* ===== CORREÇÃO EXATA: CAMPO DE VENDAS NO MENU E BOTÕES (- +) ===== */
+    /* 1. Fundo do retângulo onde aparece o número */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         border: 1px solid #333333 !important;
-        padding: 5px !important;
     }
-    [data-testid="stSidebar"] div[data-testid="stNumberInput"] label {
-        color: #ffffff !important;
-    }
+    /* 2. Cor do número digitado e do rótulo dentro do retângulo */
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] label,
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
+    }
+    /* 3. Cor dos botões de menos (-) e mais (+) dentro do retângulo */
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
+        color: #ffffff !important;
+        border: 1px solid #444444 !important;
+    }
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
+        background-color: #222222 !important;
     }
 </style>
 """, unsafe_allow_html=True)
