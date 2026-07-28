@@ -35,19 +35,18 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== CORREÇÃO DEFINITIVA: RÓTULO vs CAMPO ===== */
-    /* 1. Rótulo "Vendas estimadas no mês" - APENAS O TEXTO (fundo Cinza Chumbo) */
+    /* ===== TARJA PRETA NO MENU (SEM BORDAS) ===== */
     [data-testid="stSidebar"] label {
         color: #ffffff !important;
         background-color: #2c2c2c !important;
         padding: 0px !important;
     }
 
-    /* 2. O campo onde aparece o número (fundo Preto Fosco) */
+    /* Campo do número (fundo Preto Fosco, sem borda) */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
-        border: 1px solid #333333 !important;
+        border: none !important;   /* <=== BORDA REMOVIDA AQUI */
         padding: 0px !important;
     }
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
@@ -57,12 +56,13 @@ st.markdown("""
         caret-color: #ffffff !important;
     }
 
-    /* 3. Os botões (- e +) também em preto */
+    /* Botões (- e +) também pretos e SEM BORDA */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
-        border: 1px solid #444444 !important;
-        border-radius: 4px !important;
+        border: none !important;   /* <=== BORDA REMOVIDA AQUI TAMBÉM */
+        border-radius: 0px !important;
+        box-shadow: none !important;
     }
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
         background-color: #2c2c2c !important;
