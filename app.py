@@ -35,37 +35,39 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== TARJA PRETA NO MENU COM BORDA CINZA CHUMBO ===== */
+    /* ===== TARJA PRETA (SEM NENHUMA BORDA VISÍVEL) ===== */
     [data-testid="stSidebar"] label {
         color: #ffffff !important;
         background-color: #2c2c2c !important;
         padding: 0px !important;
     }
 
-    /* Container principal do campo (com borda cinza chumbo) */
+    /* Container principal do campo - sem bordas */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
-        border: 1px solid #2c2c2c !important;  /* BORDA IGUAL AO MENU */
+        border: none !important;
         padding: 0px !important;
         box-shadow: none !important;
     }
 
-    /* Campo de input (sem bordas internas) */
+    /* Campo de input - remove o anel de foco padrão */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
         background-color: #111111 !important;
         border: none !important;
         outline: none !important;
+        outline-color: #2c2c2c !important;  /* Se desenhar, desenha na cor do menu */
+        outline-width: 0px !important;      /* E com espessura zero */
         caret-color: #ffffff !important;
         box-shadow: none !important;
     }
 
-    /* Botões (- e +) com borda cinza chumbo */
+    /* Botões (- e +) sem bordas */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
-        border: 1px solid #2c2c2c !important;  /* BORDA IGUAL AO MENU */
+        border: none !important;
         outline: none !important;
         border-radius: 0px !important;
         box-shadow: none !important;
@@ -74,10 +76,12 @@ st.markdown("""
         background-color: #2c2c2c !important;
     }
 
-    /* Força a remoção de qualquer contorno residual */
+    /* Força máxima para eliminar qualquer contorno residual */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] * {
         outline: none !important;
         box-shadow: none !important;
+        outline-color: #2c2c2c !important;
+        outline-width: 0px !important;
     }
 </style>
 """, unsafe_allow_html=True)
