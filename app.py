@@ -35,41 +35,49 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== TARJA PRETA NO MENU (SEM BORDAS E SEM CONTORNO) ===== */
+    /* ===== TARJA PRETA NO MENU (SEM NENHUM CONTORNO) ===== */
     [data-testid="stSidebar"] label {
         color: #ffffff !important;
         background-color: #2c2c2c !important;
         padding: 0px !important;
     }
 
-    /* Campo do número (fundo Preto Fosco, sem borda) */
+    /* Container principal do campo */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
         border: none !important;
         padding: 0px !important;
-        box-shadow: none !important;      /* <=== REMOVE SOMBRAS */
+        box-shadow: none !important;
     }
+
+    /* Campo de input */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
         background-color: #111111 !important;
         border: none !important;
-        outline: none !important;         /* <=== REMOVE CONTORNO BRANCO */
+        outline: none !important;
         caret-color: #ffffff !important;
         box-shadow: none !important;
     }
 
-    /* Botões (- e +) também pretos e SEM CONTORNO */
+    /* Botões (- e +) */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
         border: none !important;
-        outline: none !important;         /* <=== REMOVE CONTORNO BRANCO */
+        outline: none !important;
         border-radius: 0px !important;
         box-shadow: none !important;
     }
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
         background-color: #2c2c2c !important;
+    }
+
+    /* ===== FORÇA A REMOÇÃO DE QUALQUER CONTORNO RESIDUAL ===== */
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] * {
+        outline: none !important;
+        box-shadow: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
