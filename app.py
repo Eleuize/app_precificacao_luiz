@@ -214,8 +214,8 @@ elif pagina == "🏠 Dashboard":
         
         # ===== NOVO GRÁFICO DE PIZZA (Marketplaces) =====
         st.subheader("🍕 Participação de cada Marketplace no Lucro Total")
-        # Agrupa o lucro por marketplace
-        df_pizza = df_produtos.groupby("Marketplace")["Lucro_R$"].sum().reset_index()
+        # Agrupa o lucro por marketplace usando o dataframe de resultados (df_res)
+        df_pizza = df_res.groupby(df_produtos["Marketplace"])["Lucro_R$"].sum().reset_index()
         df_pizza.columns = ["Marketplace", "Lucro_R$"]
         
         fig_pizza = px.pie(
