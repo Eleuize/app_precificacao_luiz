@@ -13,6 +13,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ===== LINHA MÁGICA PARA O ÍCONE NO CELULAR/TABLET =====
+st.markdown('<link rel="icon" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png" type="image/png">', unsafe_allow_html=True)
+
 # ================== ESTILOS GLOBAIS ==================
 st.markdown("""
 <style>
@@ -35,7 +38,7 @@ st.markdown("""
         color: #cccccc !important;
     }
 
-    /* ===== TARJA PRETA (SEM NENHUMA BORDA VISÍVEL) ===== */
+    /* ===== TARJA PRETA NO MENU (SEM NENHUMA BORDA VISÍVEL) ===== */
     [data-testid="stSidebar"] label {
         color: #ffffff !important;
         background-color: #2c2c2c !important;
@@ -57,8 +60,8 @@ st.markdown("""
         background-color: #111111 !important;
         border: none !important;
         outline: none !important;
-        outline-color: #2c2c2c !important;  /* Se desenhar, desenha na cor do menu */
-        outline-width: 0px !important;      /* E com espessura zero */
+        outline-color: #2c2c2c !important;
+        outline-width: 0px !important;
         caret-color: #ffffff !important;
         box-shadow: none !important;
     }
