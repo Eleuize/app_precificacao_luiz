@@ -216,7 +216,7 @@ elif pagina == "📝 Cadastrar Produto":
                 "COFINS_": [cofins], 
                 "IOF_": [iof], 
                 "Marketplace": [marketplace],
-                "Registrado_Por": [st.session_state.usuario_nome],
+                "Registrado_Por": ["Luiz"],
                 "Data_Hora": [datetime.now().strftime("%d/%m/%Y %H:%M")]
             })
             df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
