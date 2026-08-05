@@ -80,19 +80,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ================== GERENCIAMENTO DE USUÁRIOS NO SESSION_STATE ==================
+# ================== GERENCIAMENTO DE USUÁRIOS (PERSISTENTE) ==================
 def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
-# Força a inicialização limpa com uma nova chave de sessão para evitar cache antigo
-if "usuarios_db_v2" not in st.session_state:
-    st.session_state.usuarios_db_v2 = {
+def carregar_usuarios():
+    if os.path.exists("usuarios.json"):
+        try:
+            with open("usuarios.json", "r") as f:
+                return json.load(f)
+        except:
+            pass
+    
+    # Base padrão caso o arquivo não exista
+    usuarios_padrao = {
         "admin": {
             "nome": "Administrador",
             "senha": hash_senha("admin123"),
             "tipo": "Administrador"
         }
     }
+    salvar_usuarios(usuarios_padrao)
+    return usuarios_padrao
+
+def salvar_usuarios(usuarios_db):
+    with open("usuarios.json", "w") as f:
+        json.dump(usuarios_db, f, indent=4)
+
+# Inicializa session_state para usuários
+if "usuarios_db_v3" not in st.session_state:
+    st.session_state.usuarios_db_v3 = carregar_usuarios()
 
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -114,7 +131,7 @@ if not st.session_state.autenticado:
             botao_login = st.form_submit_button("Entrar no Sistema", use_container_width=True)
             
             if botao_login:
-                usuarios_db = st.session_state.usuarios_db_v2
+                usuarios_db = st.session_state.usuarios_db_v3
                 if usuario_input in usuarios_db and usuarios_db[usuario_input]["senha"] == hash_senha(senha_input):
                     st.session_state.autenticado = True
                     st.session_state.usuario_atual = usuario_input
@@ -394,9 +411,9 @@ elif pagina == "📊 Relatório":
 elif pagina == "⚙️ Configurações":
     st.title("⚙️ Configurações")
     
-    # Gerenciamento de Usuários (Apenas para Administradores)
-    st.subheader("👥 Gerenciamento de Usuários e Acessos")
+    # Gerenciamento de Usuários (EXCLUSIVO PARA ADMINISTRADORES)
     if st.session_state.tipo_usuario == "Administrador":
+        st.subheader("👥 Gerenciamento de Usuários e Acessos")
         with st.form("form_novo_usuario"):
             st.markdown("**Adicionar Novo Usuário**")
             nome_completo_novo = st.text_input("Nome Completo do Usuário (Ex: Luiz, Maria...)")
@@ -407,33 +424,56 @@ elif pagina == "⚙️ Configurações":
             
             if btn_criar_user:
                 if nome_completo_novo and login_novo and senha_novo:
-                    if login_novo in st.session_state.usuarios_db_v2:
+                    if login_novo in st.session_state.usuarios_db_v3:
                         st.error("⚠️ Este login de usuário já existe.")
                     else:
-                        st.session_state.usuarios_db_v2[login_novo] = {
+                        st.session_state.usuarios_db_v3[login_novo] = {
                             "nome": nome_completo_novo,
                             "senha": hash_senha(senha_novo),
                             "tipo": tipo_novo
                         }
+                        salvar_usuarios(st.session_state.usuarios_db_v3)
                         st.success(f"✅ Usuário '{nome_completo_novo}' ({login_novo}) criado com sucesso!")
                 else:
                     st.warning("Por favor, preencha todos os campos do novo usuário.")
         
         st.markdown("---")
+        
+        # Alterar Senha de Qualquer Usuário
+        with st.form("form_alterar_senha"):
+            st.markdown("**🔑 Alterar Senha de Usuário**")
+            usuarios_lista = list(st.session_state.usuarios_db_v3.keys())
+            usuario_alvo = st.selectbox("Selecione o usuário para alterar a senha", usuarios_lista)
+            nova_senha_input = st.text_input("Nova Senha", type="password")
+            btn_alt_senha = st.form_submit_button("🔄 Atualizar Senha")
+            
+            if btn_alt_senha:
+                if nova_senha_input:
+                    st.session_state.usuarios_db_v3[usuario_alvo]["senha"] = hash_senha(nova_senha_input)
+                    salvar_usuarios(st.session_state.usuarios_db_v3)
+                    st.success(f"✅ Senha do usuário '{usuario_alvo}' alterada com sucesso!")
+                else:
+                    st.warning("Digite a nova senha.")
+        
+        st.markdown("---")
         st.markdown("**Usuários Cadastrados no Sistema:**")
-        for usr, info in list(st.session_state.usuarios_db_v2.items()):
+        for usr, info in list(st.session_state.usuarios_db_v3.items()):
             col_u1, col_u2, col_u3, col_u4 = st.columns([2, 2, 2, 1])
             col_u1.write(f"👤 **{info.get('nome', usr)}**")
             col_u2.write(f"Login: `{usr}`")
             col_u3.write(f"Tipo: {info['tipo']}")
-            if usr != "admin":
+            if usr != "admin" or len(st.session_state.usuarios_db_v3) > 1:
                 if col_u4.button("🗑️ Deletar", key=f"del_{usr}"):
-                    del st.session_state.usuarios_db_v2[usr]
-                    st.success(f"Usuário {usr} removido!")
-                    st.rerun()
+                    if usr == st.session_state.usuario_atual:
+                        st.error("⚠️ Você não pode deletar o seu próprio usuário logado.")
+                    else:
+                        del st.session_state.usuarios_db_v3[usr]
+                        salvar_usuarios(st.session_state.usuarios_db_v3)
+                        st.success(f"Usuário {usr} removido!")
+                        st.rerun()
         st.markdown("---")
     else:
-        st.info("ℹ️ Apenas o Administrador pode cadastrar ou remover novos usuários.")
+        st.info("ℹ️ Apenas o Administrador pode cadastrar novos usuários, alterar senhas ou remover acessos.")
 
     st.subheader("💰 Custos Fixos Mensais")
     col1, col2 = st.columns(2)
