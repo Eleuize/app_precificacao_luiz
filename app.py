@@ -84,31 +84,15 @@ st.markdown("""
 def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
-# Inicializa os usuários na sessão se não existirem
-if "usuarios_db" not in st.session_state:
-    # Se houver um arquivo json salvo, tenta carregar, senão usa o padrão com admin123
-    if os.path.exists("usuarios.json"):
-        try:
-            with open("usuarios.json", "r") as f:
-                st.session_state.usuarios_db = json.load(f)
-        except:
-            st.session_state.usuarios_db = {}
-    
-    if not st.session_state.get("usuarios_db"):
-        st.session_state.usuarios_db = {
-            "admin": {
-                "nome": "Administrador",
-                "senha": hash_senha("admin123"),
-                "tipo": "Administrador"
-            }
+# Força a inicialização limpa com uma nova chave de sessão para evitar cache antigo
+if "usuarios_db_v2" not in st.session_state:
+    st.session_state.usuarios_db_v2 = {
+        "admin": {
+            "nome": "Administrador",
+            "senha": hash_senha("admin123"),
+            "tipo": "Administrador"
         }
-
-def salvar_usuarios_sessao():
-    try:
-        with open("usuarios.json", "w") as f:
-            json.dump(st.session_state.usuarios_db, f)
-    except:
-        pass
+    }
 
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -130,7 +114,7 @@ if not st.session_state.autenticado:
             botao_login = st.form_submit_button("Entrar no Sistema", use_container_width=True)
             
             if botao_login:
-                usuarios_db = st.session_state.usuarios_db
+                usuarios_db = st.session_state.usuarios_db_v2
                 if usuario_input in usuarios_db and usuarios_db[usuario_input]["senha"] == hash_senha(senha_input):
                     st.session_state.autenticado = True
                     st.session_state.usuario_atual = usuario_input
@@ -423,30 +407,28 @@ elif pagina == "⚙️ Configurações":
             
             if btn_criar_user:
                 if nome_completo_novo and login_novo and senha_novo:
-                    if login_novo in st.session_state.usuarios_db:
+                    if login_novo in st.session_state.usuarios_db_v2:
                         st.error("⚠️ Este login de usuário já existe.")
                     else:
-                        st.session_state.usuarios_db[login_novo] = {
+                        st.session_state.usuarios_db_v2[login_novo] = {
                             "nome": nome_completo_novo,
                             "senha": hash_senha(senha_novo),
                             "tipo": tipo_novo
                         }
-                        salvar_usuarios_sessao()
                         st.success(f"✅ Usuário '{nome_completo_novo}' ({login_novo}) criado com sucesso!")
                 else:
                     st.warning("Por favor, preencha todos os campos do novo usuário.")
         
         st.markdown("---")
         st.markdown("**Usuários Cadastrados no Sistema:**")
-        for usr, info in list(st.session_state.usuarios_db.items()):
+        for usr, info in list(st.session_state.usuarios_db_v2.items()):
             col_u1, col_u2, col_u3, col_u4 = st.columns([2, 2, 2, 1])
             col_u1.write(f"👤 **{info.get('nome', usr)}**")
             col_u2.write(f"Login: `{usr}`")
             col_u3.write(f"Tipo: {info['tipo']}")
             if usr != "admin":
                 if col_u4.button("🗑️ Deletar", key=f"del_{usr}"):
-                    del st.session_state.usuarios_db[usr]
-                    salvar_usuarios_sessao()
+                    del st.session_state.usuarios_db_v2[usr]
                     st.success(f"Usuário {usr} removido!")
                     st.rerun()
         st.markdown("---")
