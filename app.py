@@ -85,21 +85,32 @@ def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
 def carregar_usuarios():
-    if os.path.exists("usuarios.json"):
-        try:
-            with open("usuarios.json", "r") as f:
-                return json.load(f)
-        except:
-            pass
-    
-    # Base padrão caso o arquivo não exista
+    # Base padrão garantida sempre que reiniciar
     usuarios_padrao = {
         "admin": {
             "nome": "Administrador",
             "senha": hash_senha("admin123"),
             "tipo": "Administrador"
+        },
+        "eleuize": {
+            "nome": "Eleuize",
+            "senha": hash_senha("X@drez21"),
+            "tipo": "Administrador"
         }
     }
+    
+    if os.path.exists("usuarios.json"):
+        try:
+            with open("usuarios.json", "r") as f:
+                dados = json.load(f)
+                # Garante que os admins padrão sempre existam
+                for k, v in usuarios_padrao.items():
+                    if k not in dados:
+                        dados[k] = v
+                return dados
+        except:
+            pass
+            
     salvar_usuarios(usuarios_padrao)
     return usuarios_padrao
 
