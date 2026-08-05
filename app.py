@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import json
 import os
+import hashlib
 from datetime import datetime
 
 st.set_page_config(
@@ -93,6 +94,67 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ================== GERENCIAMENTO DE USUÁRIOS E HASH ==================
+def hash_senha(senha):
+    return hashlib.sha256(senha.encode()).hexdigest()
+
+def carregar_usuarios():
+    if os.path.exists("usuarios.json"):
+        with open("usuarios.json", "r") as f:
+            return json.load(f)
+    else:
+        # Usuário Administrador padrão inicial (Senha: admin123)
+        usuarios_padrao = {
+            "admin": {
+                "nome": "Administrador",
+                "senha": hash_senha("admin123"),
+                "tipo": "Administrador"
+            }
+        }
+        with open("usuarios.json", "w") as f:
+            json.dump(usuarios_padrao, f)
+        return usuarios_padrao
+
+def salvar_usuarios(usuarios):
+    with open("usuarios.json", "w") as f:
+        json.dump(usuarios, f)
+
+# Inicializa sessão de autenticação
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+    st.session_state.usuario_atual = None
+    st.session_state.nome_usuario_atual = None
+    st.session_state.tipo_usuario = None
+
+# ================== TELA DE LOGIN ==================
+if not st.session_state.autenticado:
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center;'>🔐 Acesso Restrito - CALC MARKUP</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #666;'>Entre com suas credenciais para continuar.</p>", unsafe_allow_html=True)
+        
+        usuarios_db = carregar_usuarios()
+        
+        with st.form("form_login"):
+            usuario_input = st.text_input("Usuário (Login)")
+            senha_input = st.text_input("Senha", type="password")
+            botao_login = st.form_submit_button("Entrar no Sistema", use_container_width=True)
+            
+            if botao_login:
+                if usuario_input in usuarios_db and usuarios_db[usuario_input]["senha"] == hash_senha(senha_input):
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_atual = usuario_input
+                    st.session_state.nome_usuario_atual = usuarios_db[usuario_input].get("nome", usuario_input)
+                    st.session_state.tipo_usuario = usuarios_db[usuario_input]["tipo"]
+                    st.success("Login realizado com sucesso!")
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuário ou senha incorretos.")
+        
+        st.stop()
+
+# ================== FUNÇÕES DE CONFIGURAÇÃO E DADOS ==================
 def carregar_config():
     if os.path.exists("config.json"):
         with open("config.json", "r") as f:
@@ -118,8 +180,6 @@ def carregar_produtos():
 
 def salvar_produtos(df):
     df.to_csv("produtos.csv", index=False)
-    
-    # ========== BACKUP AUTOMÁTICO ==========
     try:
         agora = datetime.now().strftime("%Y-%m-%d_%H-%M")
         nome_backup = f"backups/{agora}_produtos.csv"
@@ -148,22 +208,33 @@ def calcular_preco(row, config, vendas_mes):
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
+# ================== MENU LATERAL E SESSÃO ==================
 st.sidebar.image("logo.png", width=220)
 
-st.sidebar.markdown("""
+st.sidebar.markdown(f"""
 <h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
 <p style='font-size: 14px; color: #cccccc; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
+<hr style='margin: 10px 0; border-color: #444;'>
+<p style='font-size: 13px; color: #ffffff; text-align: center;'>👤 <b>{st.session_state.nome_usuario_atual}</b><br><span style='color: #4CAF50; font-size: 11px;'>({st.session_state.tipo_usuario})</span></p>
 """, unsafe_allow_html=True)
+
+if st.sidebar.button("🚪 Sair / Trocar Usuário"):
+    st.session_state.autenticado = False
+    st.session_state.usuario_atual = None
+    st.session_state.nome_usuario_atual = None
+    st.session_state.tipo_usuario = None
+    st.rerun()
 
 pagina = st.sidebar.radio(
     "Navegação",
-    ["🏠 Início", "📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações", "📋 Auditoria"]
+    ["🏠 Início", "📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
 )
 
 config = carregar_config()
 df_produtos = carregar_produtos()
 vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
 
+# ================== PÁGINAS DO APLICATIVO ==================
 if pagina == "🏠 Início":
     st.markdown("""
     <style>
@@ -220,12 +291,12 @@ elif pagina == "📝 Cadastrar Produto":
                 "COFINS_": [cofins], 
                 "IOF_": [iof], 
                 "Marketplace": [marketplace],
-                "Registrado_Por": ["Luiz"],
+                "Registrado_Por": [st.session_state.nome_usuario_atual],
                 "Data_Hora": [datetime.now().strftime("%d/%m/%Y %H:%M")]
             })
             df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
             salvar_produtos(df_produtos)
-            st.success(f"✅ Produto '{nome}' cadastrado!")
+            st.success(f"✅ Produto '{nome}' cadastrado por {st.session_state.nome_usuario_atual}!")
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
@@ -236,15 +307,17 @@ elif pagina == "📥 Importar CSV":
             df_import = pd.read_csv(arquivo)
             ultimo_id = df_produtos["ID"].max() if not df_produtos.empty else 0
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
-            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]]
+            df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
+            df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Registrado_Por", "Data_Hora"]]
             df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
             salvar_produtos(df_produtos)
-            st.success(f"✅ {len(df_import)} produtos importados!")
+            st.success(f"✅ {len(df_import)} produtos importados por {st.session_state.nome_usuario_atual}!")
         except Exception as e:
             st.error(f"Erro: {e}")
 
 elif pagina == "📦 Produtos":
-    st.title("📦 Lista de Produtos")
+    st.title("📦 Lista de Produtos e Auditoria")
     if not df_produtos.empty:
         st.dataframe(df_produtos, use_container_width=True, height=400)
         if st.button("📥 Exportar para Excel"):
@@ -255,6 +328,7 @@ elif pagina == "📦 Produtos":
             if st.button("Deletar", type="primary"):
                 df_produtos = df_produtos[df_produtos["Nome"] != produto_del]
                 salvar_produtos(df_produtos)
+                st.success(f"Produto deletado por {st.session_state.nome_usuario_atual}")
                 st.rerun()
     else:
         st.info("Nenhum produto cadastrado.")
@@ -282,45 +356,15 @@ elif pagina == "🏠 Dashboard":
         df_pizza = df_res.groupby(df_produtos["Marketplace"])["Lucro_R$"].sum().reset_index()
         df_pizza.columns = ["Marketplace", "Lucro_R$"]
         
-        cores_marketplace = {
-            "Mercado Livre": "#FFD700",
-            "Shopee": "#FF8C00",
-            "Amazon": "#1A1A1A"
-        }
+        cores_marketplace = {"Mercado Livre": "#FFD700", "Shopee": "#FF8C00", "Amazon": "#1A1A1A"}
         
         fig_pizza = go.Figure(data=[go.Pie(
             labels=df_pizza["Marketplace"],
             values=df_pizza["Lucro_R$"],
-            marker=dict(
-                colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]],
-                line=dict(color='#FFFFFF', width=3)
-            ),
-            textinfo='label+percent',
-            textfont=dict(size=20, color='white'),
-            sort=False,
-            pull=[0.05, 0.05, 0.05]
+            marker=dict(colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]], line=dict(color='#FFFFFF', width=3)),
+            textinfo='label+percent', textfont=dict(size=20, color='white'), sort=False, pull=[0.05, 0.05, 0.05]
         )])
-        
-        fig_pizza.update_layout(
-            height=600,
-            width=900,
-            margin=dict(l=20, r=20, t=40, b=20),
-            scene=dict(
-                camera=dict(
-                    eye=dict(x=1.5, y=1.5, z=1.5)
-                )
-            ),
-            showlegend=True,
-            legend=dict(
-                font=dict(size=16, color='white'),
-                bgcolor='#2c2c2c',
-                bordercolor='#FFFFFF',
-                borderwidth=2,
-                itemsizing='constant',
-                itemwidth=40
-            )
-        )
-        
+        fig_pizza.update_layout(height=600, width=900, margin=dict(l=20, r=20, t=40, b=20), showlegend=True)
         st.plotly_chart(fig_pizza, use_container_width=True)
     else:
         st.info("Nenhum produto cadastrado.")
@@ -340,14 +384,9 @@ elif pagina == "🧮 Simulador":
         preco_calculado = res["Preco_Final_R$"]
         if preco_sugerido > 0:
             marketplace = row["Marketplace"]
-            if marketplace in config["marketplaces"]:
-                taxa_percentual = config["marketplaces"][marketplace]["comissao"]
-                taxa_fixa = config["marketplaces"][marketplace]["taxa_fixa"]
-            else:
-                taxa_percentual = 0
-                taxa_fixa = 0
+            taxa_percentual = config["marketplaces"][marketplace]["comissao"] if marketplace in config["marketplaces"] else 0
+            taxa_fixa = config["marketplaces"][marketplace]["taxa_fixa"] if marketplace in config["marketplaces"] else 0
             lucro_real = preco_sugerido - custo_total - (preco_sugerido * taxa_percentual / 100) - taxa_fixa
-            lucro_percentual = (lucro_real / preco_sugerido) * 100 if preco_sugerido > 0 else 0
             roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Custo Total", f"R$ {custo_total:.2f}")
@@ -361,12 +400,22 @@ elif pagina == "🧮 Simulador":
         st.info("Nenhum produto cadastrado.")
 
 elif pagina == "📊 Relatório":
-    st.title("📊 Relatório Completo")
+    st.title("📊 Relatório Completo com Auditoria")
     if not df_produtos.empty:
         resultados = []
         for _, row in df_produtos.iterrows():
             res = calcular_preco(row, config, vendas_mes)
-            resultados.append({"Produto": row["Nome"], "Marketplace": row["Marketplace"], "Custo Total": res["Custo_Total_R$"], "Preço Final": res["Preco_Final_R$"], "Lucro R$": res["Lucro_R$"], "Lucro %": res["Lucro_%"], "ROI %": res["ROI_%"]})
+            resultados.append({
+                "Produto": row["Nome"], 
+                "Marketplace": row["Marketplace"], 
+                "Custo Total": res["Custo_Total_R$"], 
+                "Preço Final": res["Preco_Final_R$"], 
+                "Lucro R$": res["Lucro_R$"], 
+                "Lucro %": res["Lucro_%"], 
+                "ROI %": res["ROI_%"],
+                "Cadastrado Por": row.get("Registrado_Por", "N/D"),
+                "Data/Hora": row.get("Data_Hora", "N/D")
+            })
         df_rel = pd.DataFrame(resultados)
         st.dataframe(df_rel, use_container_width=True, height=400)
         if st.button("📥 Exportar para Excel"):
@@ -377,6 +426,52 @@ elif pagina == "📊 Relatório":
 
 elif pagina == "⚙️ Configurações":
     st.title("⚙️ Configurações")
+    
+    # Gerenciamento de Usuários (Apenas para Administradores)
+    st.subheader("👥 Gerenciamento de Usuários e Acessos")
+    if st.session_state.tipo_usuario == "Administrador":
+        usuarios_db = carregar_usuarios()
+        
+        with st.form("form_novo_usuario"):
+            st.markdown("**Adicionar Novo Usuário**")
+            nome_completo_novo = st.text_input("Nome Completo do Usuário (Ex: Luiz, Maria...)")
+            login_novo = st.text_input("Nome de Usuário para Login (Ex: luiz, maria...)")
+            senha_novo = st.text_input("Senha Inicial", type="password")
+            tipo_novo = st.selectbox("Tipo de Acesso", ["Usuário Comum", "Administrador"])
+            btn_criar_user = st.form_submit_button("➕ Criar Usuário")
+            
+            if btn_criar_user:
+                if nome_completo_novo and login_novo and senha_novo:
+                    if login_novo in usuarios_db:
+                        st.error("⚠️ Este login de usuário já existe.")
+                    else:
+                        usuarios_db[login_novo] = {
+                            "nome": nome_completo_novo,
+                            "senha": hash_senha(senha_novo),
+                            "tipo": tipo_novo
+                        }
+                        salvar_usuarios(usuarios_db)
+                        st.success(f"✅ Usuário '{nome_completo_novo}' ({login_novo}) criado com sucesso!")
+                else:
+                    st.warning("Por favor, preencha todos os campos do novo usuário.")
+        
+        st.markdown("---")
+        st.markdown("**Usuários Cadastrados no Sistema:**")
+        for usr, info in usuarios_db.items():
+            col_u1, col_u2, col_u3, col_u4 = st.columns([2, 2, 2, 1])
+            col_u1.write(f"👤 **{info.get('nome', usr)}**")
+            col_u2.write(f"Login: `{usr}`")
+            col_u3.write(f"Tipo: {info['tipo']}")
+            if usr != "admin":
+                if col_u4.button("🗑️ Deletar", key=f"del_{usr}"):
+                    del usuarios_db[usr]
+                    salvar_usuarios(usuarios_db)
+                    st.success(f"Usuário {usr} removido!")
+                    st.rerun()
+        st.markdown("---")
+    else:
+        st.info("ℹ️ Apenas o Administrador pode cadastrar ou remover novos usuários.")
+
     st.subheader("💰 Custos Fixos Mensais")
     col1, col2 = st.columns(2)
     with col1:
@@ -387,6 +482,7 @@ elif pagina == "⚙️ Configurações":
         config["custos_fixos"]["internet"] = st.number_input("Internet", value=config["custos_fixos"]["internet"])
         config["custos_fixos"]["logistica"] = st.number_input("Logística", value=config["custos_fixos"]["logistica"])
         config["custos_fixos"]["outros"] = st.number_input("Outros", value=config["custos_fixos"]["outros"])
+    
     st.subheader("📊 Impostos (%)")
     col1, col2 = st.columns(2)
     with col1:
@@ -397,6 +493,7 @@ elif pagina == "⚙️ Configurações":
         config["impostos"]["pis"] = st.number_input("PIS", value=config["impostos"]["pis"])
         config["impostos"]["cofins"] = st.number_input("COFINS", value=config["impostos"]["cofins"])
         config["impostos"]["iof"] = st.number_input("IOF", value=config["impostos"]["iof"])
+        
     st.subheader("🏪 Marketplaces")
     for mp in config["marketplaces"]:
         col1, col2 = st.columns(2)
@@ -404,18 +501,18 @@ elif pagina == "⚙️ Configurações":
             config["marketplaces"][mp]["comissao"] = st.number_input(f"{mp} - Comissão %", value=config["marketplaces"][mp]["comissao"])
         with col2:
             config["marketplaces"][mp]["taxa_fixa"] = st.number_input(f"{mp} - Taxa Fixa R$", value=config["marketplaces"][mp]["taxa_fixa"])
+            
     st.subheader("💱 Cotação")
     config["cotacao_dolar"] = st.number_input("Cotação do Dólar (R$)", value=config["cotacao_dolar"], step=0.01)
+    
     if st.button("💾 Salvar Configurações", use_container_width=True):
         with open("config.json", "w") as f:
             json.dump(config, f)
-        st.success("✅ Configurações salvas!")
+        st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
 
-    # ========== SEÇÃO DO MANUAL DO USUÁRIO ==========
+    # Manual do Usuário
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
-    
-    # Botão para baixar o PDF
     try:
         with open("Manual_CALC_MARKUP.pdf", "rb") as f:
             st.download_button(
@@ -425,14 +522,5 @@ elif pagina == "⚙️ Configurações":
                 mime="application/pdf"
             )
     except FileNotFoundError:
-        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado. Certifique-se de que ele foi enviado para o repositório do GitHub.")
-    
-    # Link para visualizar online
-    st.markdown("""
-    <br>
-    <p>Você também pode visualizar o manual online clicando no link abaixo:</p>
-    <a href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf" target="_blank">
-        📖 Abrir Manual do Usuário Online
-    </a>
-    """, unsafe_allow_html=True)
+        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado no repositório.")
 
