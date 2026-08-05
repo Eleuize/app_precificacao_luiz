@@ -1,5 +1,6 @@
 {
   "admin": {
+    "nome": "Administrador",
     "senha": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659116818f35d4cae41037",
     "tipo": "Administrador"
   }
