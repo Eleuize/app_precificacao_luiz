@@ -13,8 +13,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ===== LINHA MÁGICA PARA O ÍCONE NO CELULAR/TABLET =====
-st.markdown('<link rel="icon" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png" type="image/png">', unsafe_allow_html=True)
+# ===== CONFIGURAÇÃO DE ÍCONE E MANIFESTO PARA CELULAR/TABLET/PWA =====
+st.markdown("""
+<link rel="icon" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+""", unsafe_allow_html=True)
 
 # ================== ESTILOS GLOBAIS ==================
 st.markdown("""
