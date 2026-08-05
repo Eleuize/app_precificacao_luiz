@@ -8,15 +8,16 @@ from datetime import datetime
 
 st.set_page_config(
     page_title="CALC MARKUP | LM Importing",
-    page_icon="📦",
+    page_icon="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ===== CONFIGURAÇÃO DE ÍCONE E MANIFESTO PARA CELULAR/TABLET/PWA =====
 st.markdown("""
-<link rel="icon" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png" type="image/png">
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png">
 """, unsafe_allow_html=True)
 
 # ================== ESTILOS GLOBAIS ==================
@@ -434,3 +435,4 @@ elif pagina == "⚙️ Configurações":
         📖 Abrir Manual do Usuário Online
     </a>
     """, unsafe_allow_html=True)
+
