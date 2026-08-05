@@ -38,7 +38,7 @@ st.markdown("""
     [data-testid="stSidebar"] * {
         color: #FFFFFF !important;
     }
-    /* Mantém o subtítulo "LM - Importing 2U®" em cinza claro para dar elegância */
+    /* Mantém o subtítulo em cinza claro para dar elegância */
     [data-testid="stSidebar"] p {
         color: #cccccc !important;
     }
@@ -50,7 +50,6 @@ st.markdown("""
         padding: 0px !important;
     }
 
-    /* Container principal do campo - sem bordas */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
         background-color: #111111 !important;
         border-radius: 6px !important;
@@ -59,67 +58,58 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* Campo de input - remove o anel de foco padrão */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
         color: #ffffff !important;
         background-color: #111111 !important;
         border: none !important;
         outline: none !important;
-        outline-color: #2c2c2c !important;
-        outline-width: 0px !important;
         caret-color: #ffffff !important;
         box-shadow: none !important;
     }
 
-    /* Botões (- e +) sem bordas */
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
         background-color: #111111 !important;
         color: #ffffff !important;
         border: none !important;
-        outline: none !important;
         border-radius: 0px !important;
         box-shadow: none !important;
     }
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
         background-color: #2c2c2c !important;
     }
-
-    /* Força máxima para eliminar qualquer contorno residual */
-    [data-testid="stSidebar"] div[data-testid="stNumberInput"] * {
-        outline: none !important;
-        box-shadow: none !important;
-        outline-color: #2c2c2c !important;
-        outline-width: 0px !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# ================== GERENCIAMENTO DE USUÁRIOS E HASH ==================
+# ================== GERENCIAMENTO DE USUÁRIOS NO SESSION_STATE ==================
 def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
-def carregar_usuarios():
+# Inicializa os usuários na sessão se não existirem
+if "usuarios_db" not in st.session_state:
+    # Se houver um arquivo json salvo, tenta carregar, senão usa o padrão com admin123
     if os.path.exists("usuarios.json"):
-        with open("usuarios.json", "r") as f:
-            return json.load(f)
-    else:
-        # Usuário Administrador padrão inicial (Senha: admin123)
-        usuarios_padrao = {
+        try:
+            with open("usuarios.json", "r") as f:
+                st.session_state.usuarios_db = json.load(f)
+        except:
+            st.session_state.usuarios_db = {}
+    
+    if not st.session_state.get("usuarios_db"):
+        st.session_state.usuarios_db = {
             "admin": {
                 "nome": "Administrador",
                 "senha": hash_senha("admin123"),
                 "tipo": "Administrador"
             }
         }
+
+def salvar_usuarios_sessao():
+    try:
         with open("usuarios.json", "w") as f:
-            json.dump(usuarios_padrao, f)
-        return usuarios_padrao
+            json.dump(st.session_state.usuarios_db, f)
+    except:
+        pass
 
-def salvar_usuarios(usuarios):
-    with open("usuarios.json", "w") as f:
-        json.dump(usuarios, f)
-
-# Inicializa sessão de autenticação
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
     st.session_state.usuario_atual = None
@@ -134,14 +124,13 @@ if not st.session_state.autenticado:
         st.markdown("<h2 style='text-align: center;'>🔐 Acesso Restrito - CALC MARKUP</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #666;'>Entre com suas credenciais para continuar.</p>", unsafe_allow_html=True)
         
-        usuarios_db = carregar_usuarios()
-        
         with st.form("form_login"):
             usuario_input = st.text_input("Usuário (Login)")
             senha_input = st.text_input("Senha", type="password")
             botao_login = st.form_submit_button("Entrar no Sistema", use_container_width=True)
             
             if botao_login:
+                usuarios_db = st.session_state.usuarios_db
                 if usuario_input in usuarios_db and usuarios_db[usuario_input]["senha"] == hash_senha(senha_input):
                     st.session_state.autenticado = True
                     st.session_state.usuario_atual = usuario_input
@@ -180,12 +169,6 @@ def carregar_produtos():
 
 def salvar_produtos(df):
     df.to_csv("produtos.csv", index=False)
-    try:
-        agora = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        nome_backup = f"backups/{agora}_produtos.csv"
-        df.to_csv(nome_backup, index=False)
-    except Exception as e:
-        pass
 
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
@@ -430,8 +413,6 @@ elif pagina == "⚙️ Configurações":
     # Gerenciamento de Usuários (Apenas para Administradores)
     st.subheader("👥 Gerenciamento de Usuários e Acessos")
     if st.session_state.tipo_usuario == "Administrador":
-        usuarios_db = carregar_usuarios()
-        
         with st.form("form_novo_usuario"):
             st.markdown("**Adicionar Novo Usuário**")
             nome_completo_novo = st.text_input("Nome Completo do Usuário (Ex: Luiz, Maria...)")
@@ -442,30 +423,30 @@ elif pagina == "⚙️ Configurações":
             
             if btn_criar_user:
                 if nome_completo_novo and login_novo and senha_novo:
-                    if login_novo in usuarios_db:
+                    if login_novo in st.session_state.usuarios_db:
                         st.error("⚠️ Este login de usuário já existe.")
                     else:
-                        usuarios_db[login_novo] = {
+                        st.session_state.usuarios_db[login_novo] = {
                             "nome": nome_completo_novo,
                             "senha": hash_senha(senha_novo),
                             "tipo": tipo_novo
                         }
-                        salvar_usuarios(usuarios_db)
+                        salvar_usuarios_sessao()
                         st.success(f"✅ Usuário '{nome_completo_novo}' ({login_novo}) criado com sucesso!")
                 else:
                     st.warning("Por favor, preencha todos os campos do novo usuário.")
         
         st.markdown("---")
         st.markdown("**Usuários Cadastrados no Sistema:**")
-        for usr, info in usuarios_db.items():
+        for usr, info in list(st.session_state.usuarios_db.items()):
             col_u1, col_u2, col_u3, col_u4 = st.columns([2, 2, 2, 1])
             col_u1.write(f"👤 **{info.get('nome', usr)}**")
             col_u2.write(f"Login: `{usr}`")
             col_u3.write(f"Tipo: {info['tipo']}")
             if usr != "admin":
                 if col_u4.button("🗑️ Deletar", key=f"del_{usr}"):
-                    del usuarios_db[usr]
-                    salvar_usuarios(usuarios_db)
+                    del st.session_state.usuarios_db[usr]
+                    salvar_usuarios_sessao()
                     st.success(f"Usuário {usr} removido!")
                     st.rerun()
         st.markdown("---")
@@ -523,4 +504,3 @@ elif pagina == "⚙️ Configurações":
             )
     except FileNotFoundError:
         st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado no repositório.")
-
