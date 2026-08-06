@@ -544,7 +544,7 @@ elif pagina == "⚙️ Configurações":
             json.dump(config, f)
         st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
 
-    # Manual do Usuário
+    # ===== MANUAL DO USUÁRIO =====
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
     try:
@@ -556,4 +556,4 @@ elif pagina == "⚙️ Configurações":
                 mime="application/pdf"
             )
     except FileNotFoundError:
-        st.warning("⚠️ Arquivo 'Manual
+        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado.")
