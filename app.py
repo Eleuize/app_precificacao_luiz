@@ -220,7 +220,7 @@ def calcular_preco(row, config, vendas_mes):
     return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
 # ================== MENU LATERAL E SESSÃO ==================
-st.sidebar.image("logo.png", width=220)
+st.sidebar.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=220)
 
 st.sidebar.markdown(f"""
 <h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
@@ -229,7 +229,6 @@ st.sidebar.markdown(f"""
 <p style='font-size: 13px; color: #ffffff; text-align: center;'>👤 <b>{st.session_state.nome_usuario_atual}</b><br><span style='color: #4CAF50; font-size: 11px;'>({st.session_state.tipo_usuario})</span></p>
 """, unsafe_allow_html=True)
 
-# Botão de Sair com o ícone de caderneta com caneta (📝) e cor cinza chumbo reforçada
 if st.sidebar.button("📝 Sair / Trocar Usuário"):
     st.session_state.autenticado = False
     st.session_state.usuario_atual = None
@@ -289,7 +288,7 @@ elif pagina == "📝 Cadastrar Produto":
             iof = st.number_input("IOF", min_value=0.0, step=0.1)
         submit = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
         if submit:
-            novo_id = df_produtos["ID"].max() + 1 if not df_produtos.empty else 1
+            novo_id = int(df_produtos["ID"].max() + 1) if not df_produtos.empty and "ID" in df_produtos.columns else 1
             novo_produto = pd.DataFrame({
                 "ID": [novo_id], 
                 "Nome": [nome], 
@@ -317,7 +316,7 @@ elif pagina == "📥 Importar CSV":
     if arquivo:
         try:
             df_import = pd.read_csv(arquivo)
-            ultimo_id = df_produtos["ID"].max() if not df_produtos.empty else 0
+            ultimo_id = int(df_produtos["ID"].max()) if not df_produtos.empty and "ID" in df_produtos.columns else 0
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
             df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
             df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -370,11 +369,14 @@ elif pagina == "🏠 Dashboard":
         
         cores_marketplace = {"Mercado Livre": "#FFD700", "Shopee": "#FF8C00", "Amazon": "#1A1A1A"}
         
+        # Correção segura para garantir que marketplaces sem cor mapeada recebam um tom padrão cinza
+        lista_cores_final = [cores_marketplace.get(m, "#808080") for m in df_pizza["Marketplace"]]
+        
         fig_pizza = go.Figure(data=[go.Pie(
             labels=df_pizza["Marketplace"],
             values=df_pizza["Lucro_R$"],
-            marker=dict(colors=[cores_marketplace[m] for m in df_pizza["Marketplace"]], line=dict(color='#FFFFFF', width=3)),
-            textinfo='label+percent', textfont=dict(size=20, color='white'), sort=False, pull=[0.05, 0.05, 0.05]
+            marker=dict(colors=lista_cores_final, line=dict(color='#FFFFFF', width=3)),
+            textinfo='label+percent', textfont=dict(size=20, color='white'), sort=False, pull=[0.05]*len(df_pizza)
         )])
         fig_pizza.update_layout(height=600, width=900, margin=dict(l=20, r=20, t=40, b=20), showlegend=True)
         st.plotly_chart(fig_pizza, use_container_width=True)
@@ -504,35 +506,35 @@ elif pagina == "⚙️ Configurações":
     st.subheader("💰 Custos Fixos Mensais")
     col1, col2 = st.columns(2)
     with col1:
-        config["custos_fixos"]["aluguel"] = st.number_input("Aluguel", value=config["custos_fixos"]["aluguel"])
-        config["custos_fixos"]["pro_labore"] = st.number_input("Pró-labore", value=config["custos_fixos"]["pro_labore"])
-        config["custos_fixos"]["contabilidade"] = st.number_input("Contabilidade", value=config["custos_fixos"]["contabilidade"])
+        config["custos_fixos"]["aluguel"] = st.number_input("Aluguel", value=float(config["custos_fixos"]["aluguel"]))
+        config["custos_fixos"]["pro_labore"] = st.number_input("Pró-labore", value=float(config["custos_fixos"]["pro_labore"]))
+        config["custos_fixos"]["contabilidade"] = st.number_input("Contabilidade", value=float(config["custos_fixos"]["contabilidade"]))
     with col2:
-        config["custos_fixos"]["internet"] = st.number_input("Internet", value=config["custos_fixos"]["internet"])
-        config["custos_fixos"]["logistica"] = st.number_input("Logística", value=config["custos_fixos"]["logistica"])
-        config["custos_fixos"]["outros"] = st.number_input("Outros", value=config["custos_fixos"]["outros"])
+        config["custos_fixos"]["internet"] = st.number_input("Internet", value=float(config["custos_fixos"]["internet"]))
+        config["custos_fixos"]["logistica"] = st.number_input("Logística", value=float(config["custos_fixos"]["logistica"]))
+        config["custos_fixos"]["outros"] = st.number_input("Outros", value=float(config["custos_fixos"]["outros"]))
     
     st.subheader("📊 Impostos (%)")
     col1, col2 = st.columns(2)
     with col1:
-        config["impostos"]["ii"] = st.number_input("II", value=config["impostos"]["ii"])
-        config["impostos"]["ipi"] = st.number_input("IPI", value=config["impostos"]["ipi"])
-        config["impostos"]["icms"] = st.number_input("ICMS", value=config["impostos"]["icms"])
+        config["impostos"]["ii"] = st.number_input("II", value=float(config["impostos"]["ii"]))
+        config["impostos"]["ipi"] = st.number_input("IPI", value=float(config["impostos"]["ipi"]))
+        config["impostos"]["icms"] = st.number_input("ICMS", value=float(config["impostos"]["icms"]))
     with col2:
-        config["impostos"]["pis"] = st.number_input("PIS", value=config["impostos"]["pis"])
-        config["impostos"]["cofins"] = st.number_input("COFINS", value=config["impostos"]["cofins"])
-        config["impostos"]["iof"] = st.number_input("IOF", value=config["impostos"]["iof"])
+        config["impostos"]["pis"] = st.number_input("PIS", value=float(config["impostos"]["pis"]))
+        config["impostos"]["cofins"] = st.number_input("COFINS", value=float(config["impostos"]["cofins"]))
+        config["impostos"]["iof"] = st.number_input("IOF", value=float(config["impostos"]["iof"]))
         
     st.subheader("🏪 Marketplaces")
     for mp in config["marketplaces"]:
         col1, col2 = st.columns(2)
         with col1:
-            config["marketplaces"][mp]["comissao"] = st.number_input(f"{mp} - Comissão %", value=config["marketplaces"][mp]["comissao"])
+            config["marketplaces"][mp]["comissao"] = st.number_input(f"{mp} - Comissão %", value=float(config["marketplaces"][mp]["comissao"]))
         with col2:
-            config["marketplaces"][mp]["taxa_fixa"] = st.number_input(f"{mp} - Taxa Fixa R$", value=config["marketplaces"][mp]["taxa_fixa"])
+            config["marketplaces"][mp]["taxa_fixa"] = st.number_input(f"{mp} - Taxa Fixa R$", value=float(config["marketplaces"][mp]["taxa_fixa"]))
             
     st.subheader("💱 Cotação")
-    config["cotacao_dolar"] = st.number_input("Cotação do Dólar (R$)", value=config["cotacao_dolar"], step=0.01)
+    config["cotacao_dolar"] = st.number_input("Cotação do Dólar (R$)", value=float(config["cotacao_dolar"]), step=0.01)
     
     if st.button("💾 Salvar Configurações", use_container_width=True):
         with open("config.json", "w") as f:
