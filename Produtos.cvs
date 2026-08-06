@@ -1,21 +1,48 @@
-ID,Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace,Registrado_Por,Data_Hora
-1,Protetor de Privacidade de Câmera (Kit 5),0.25,0.05,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-2,Protetor de Privacidade de Câmera (Kit 10),0.50,0.10,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-3,Protetor de Privacidade de Câmera (Kit 15),0.75,0.15,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-4,Protetor de Privacidade de Câmera (Kit 5),0.25,0.05,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-5,Protetor de Privacidade de Câmera (Kit 10),0.50,0.10,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-6,Protetor de Privacidade de Câmera (Kit 15),0.75,0.15,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-7,Protetor de Privacidade de Câmera FULL (Kit 5),0.25,0.05,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-8,Protetor de Privacidade de Câmera FULL (Kit 10),0.50,0.10,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-9,Protetor de Privacidade de Câmera FULL (Kit 15),0.75,0.15,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-10,Protetor de Privacidade de Câmera (Kit 5),0.25,0.05,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Amazon,Luiz,03/08/2026 23:50
-11,Protetor de Privacidade de Câmera (Kit 10),0.50,0.10,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Amazon,Luiz,03/08/2026 23:50
-12,Protetor de Privacidade de Câmera (Kit 15),0.75,0.15,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Amazon,Luiz,03/08/2026 23:50
-13,Protetor de Privacidade Webcam,0.02,0.01,0.50,60.0,0.0,20.0,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-14,Protetor Cabo Tipo C Transparente,0.04,0.01,0.50,60.0,0.0,20.0,0.0,0.0,0.0,Mercado Livre,Luiz,03/08/2026 23:50
-15,Prot. Cabo Celular Transparente (Kit 2),0.24,0.02,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-16,Prot. Cabo Celular Transparente (Kit 4),0.48,0.04,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-17,Prot. Cabo Celular Transparente (Kit 6),0.72,0.06,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-18,Prot. Cabo Celular Transparente (Kit 8),0.96,0.08,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-19,Prot. Cabo Celular Colorido (Kit 2),0.24,0.02,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
-20,Prot. Cabo Celular Colorido (Kit 4),0.48,0.04,0.50,0.0,0.0,4.5,0.0,0.0,0.0,Shopee,Luiz,03/08/2026 23:50
+Nome,Quantidade_Pecas,Marketplace
+Protetor de Privacidade de Câmera,5,Shopee
+Protetor de Privacidade de Câmera,10,Shopee
+Protetor de Privacidade de Câmera,15,Shopee
+Protetor de Privacidade de Câmera,5,Mercado Livre
+Protetor de Privacidade de Câmera,10,Mercado Livre
+Protetor de Privacidade de Câmera,15,Mercado Livre
+Protetor de Privacidade de Câmera FULL,5,Mercado Livre Premium
+Protetor de Privacidade de Câmera FULL,10,Mercado Livre Premium
+Protetor de Privacidade de Câmera FULL,15,Mercado Livre Premium
+Protetor de Privacidade de Câmera,5,Amazon
+Protetor de Privacidade de Câmera,10,Amazon
+Protetor de Privacidade de Câmera,15,Amazon
+Protetor de Privacidade Webcam,1,Mercado Livre
+Protetor Cabo Tipo C Transparente,1,Mercado Livre
+Prot. Cabo Celular Transparente,2,Shopee
+Prot. Cabo Celular Transparente,4,Shopee
+Prot. Cabo Celular Transparente,6,Shopee
+Prot. Cabo Celular Transparente,8,Shopee
+Prot. Cabo Celular Transparente,2,Mercado Livre
+Prot. Cabo Celular Transparente,4,Mercado Livre
+Prot. Cabo Celular Transparente,6,Mercado Livre
+Prot. Cabo Celular Transparente,8,Mercado Livre
+Prot. Cabo Celular Transparente,2,FULL - Mercado Livre Premium
+Prot. Cabo Celular Transparente,4,FULL - Mercado Livre Premium
+Prot. Cabo Celular Transparente,6,FULL - Mercado Livre Premium
+Prot. Cabo Celular Transparente,8,FULL - Mercado Livre Premium
+Prot. Cabo Celular Transparente,2,Amazon
+Prot. Cabo Celular Transparente,4,Amazon
+Prot. Cabo Celular Transparente,6,Amazon
+Prot. Cabo Celular Transparente,8,Amazon
+Prot. Cabo Celular Colorido,2,Shopee
+Prot. Cabo Celular Colorido,4,Shopee
+Prot. Cabo Celular Colorido,6,Shopee
+Prot. Cabo Celular Colorido,8,Shopee
+Prot. Cabo Celular Colorido,2,Mercado Livre
+Prot. Cabo Celular Colorido,4,Mercado Livre
+Prot. Cabo Celular Colorido,6,Mercado Livre
+Prot. Cabo Celular Colorido,8,Mercado Livre
+Prot. Cabo Celular Colorido,2,FULL - Mercado Livre Premium
+Prot. Cabo Celular Colorido,4,FULL - Mercado Livre Premium
+Prot. Cabo Celular Colorido,6,FULL - Mercado Livre Premium
+Prot. Cabo Celular Colorido,8,FULL - Mercado Livre Premium
+Prot. Cabo Celular Colorido,2,Amazon
+Prot. Cabo Celular Colorido,4,Amazon
+Prot. Cabo Celular Colorido,6,Amazon
+Prot. Cabo Celular Colorido,8,Amazon
+
