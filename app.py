@@ -213,12 +213,32 @@ st.sidebar.markdown(f"""
 <p style='font-size: 13px; color: #ffffff; text-align: center;'>👤 <b>{st.session_state.nome_usuario_atual}</b><br><span style='color: #4CAF50; font-size: 11px;'>({st.session_state.tipo_usuario})</span></p>
 """, unsafe_allow_html=True)
 
-if st.sidebar.button("🚪 Sair / Trocar Usuário"):
+# ========== BOTÃO SAIR / TROCAR USUÁRIO (MODIFICADO) ==========
+if st.sidebar.button("📓 Sair / Trocar Usuário"):
     st.session_state.autenticado = False
     st.session_state.usuario_atual = None
     st.session_state.nome_usuario_atual = None
     st.session_state.tipo_usuario = None
     st.rerun()
+
+# ========== ESTILO PERSONALIZADO PARA O BOTÃO (CINZA CHUMBO E LETRA BRANCA) ==========
+st.markdown("""
+<style>
+    /* Força o botão de sair a ter fundo cinza chumbo e letras brancas */
+    div[data-testid="stSidebar"] div.stButton > button {
+        background-color: #2c2c2c !important;
+        color: #ffffff !important;
+        border: 1px solid #444444 !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+    }
+    div[data-testid="stSidebar"] div.stButton > button:hover {
+        background-color: #3c3c3c !important;
+        color: #ffffff !important;
+        border-color: #666666 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
     "Navegação",
@@ -529,11 +549,4 @@ elif pagina == "⚙️ Configurações":
     st.subheader("📘 Manual do Usuário")
     try:
         with open("Manual_CALC_MARKUP.pdf", "rb") as f:
-            st.download_button(
-                label="📥 Baixar Manual do Usuário (PDF)",
-                data=f,
-                file_name="Manual_CALC_MARKUP.pdf",
-                mime="application/pdf"
-            )
-    except FileNotFoundError:
-        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado no repositório.")
+            st
