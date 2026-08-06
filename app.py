@@ -549,4 +549,11 @@ elif pagina == "⚙️ Configurações":
     st.subheader("📘 Manual do Usuário")
     try:
         with open("Manual_CALC_MARKUP.pdf", "rb") as f:
-            st
+            st.download_button(
+                label="📥 Baixar Manual do Usuário (PDF)",
+                data=f,
+                file_name="Manual_CALC_MARKUP.pdf",
+                mime="application/pdf"
+            )
+    except FileNotFoundError:
+        st.warning("⚠️ Arquivo 'Manual
