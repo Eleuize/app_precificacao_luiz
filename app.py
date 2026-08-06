@@ -25,6 +25,7 @@ st.markdown("""
 # ================== ESTILOS GLOBAIS ==================
 st.markdown("""
 <style>
+    /* Estilo padrão para botões fora da barra lateral */
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; border: none; }
     .stButton > button:hover { background-color: #45a049; }
     .stTextInput > div > div > input { border-radius: 8px; }
@@ -79,14 +80,18 @@ st.markdown("""
         background-color: #2c2c2c !important;
     }
 
-    /* ===== BOTÃO ESPECÍFICO DO MENU LATERAL (SAIR / TROCAR USUÁRIO) ===== */
-    div[data-testid="stSidebar"] .stButton > button {
+    /* ===== BOTÃO ESPECÍFICO DO MENU LATERAL (SAIR / TROCAR USUÁRIO) - SOBRESCREVENDO O VERDE ===== */
+    [data-testid="stSidebar"] button,
+    section[data-testid="stSidebar"] .stButton button,
+    [data-testid="stSidebar"] .stButton > button {
         background-color: #3b3b3b !important;
         color: #FFFFFF !important;
         border: 1px solid #555555 !important;
         font-weight: 600 !important;
     }
-    div[data-testid="stSidebar"] .stButton > button:hover {
+    [data-testid="stSidebar"] button:hover,
+    section[data-testid="stSidebar"] .stButton button:hover,
+    [data-testid="stSidebar"] .stButton > button:hover {
         background-color: #4f4f4f !important;
         color: #FFFFFF !important;
         border: 1px solid #777777 !important;
@@ -224,7 +229,7 @@ st.sidebar.markdown(f"""
 <p style='font-size: 13px; color: #ffffff; text-align: center;'>👤 <b>{st.session_state.nome_usuario_atual}</b><br><span style='color: #4CAF50; font-size: 11px;'>({st.session_state.tipo_usuario})</span></p>
 """, unsafe_allow_html=True)
 
-# Botão de Sair com o ícone de caderneta com caneta (📝) e cor cinza chumbo ajustada pelo CSS
+# Botão de Sair com o ícone de caderneta com caneta (📝) e cor cinza chumbo reforçada
 if st.sidebar.button("📝 Sair / Trocar Usuário"):
     st.session_state.autenticado = False
     st.session_state.usuario_atual = None
@@ -536,13 +541,26 @@ elif pagina == "⚙️ Configurações":
 
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
-    try:
-        with open("Manual_CALC_MARKUP.pdf", "rb") as f:
-            st.download_button(
-                label="📥 Baixar Manual do Usuário (PDF)",
-                data=f,
-                file_name="Manual_CALC_MARKUP.pdf",
-                mime="application/pdf"
-            )
-    except FileNotFoundError:
-        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado no repositório.")
+    url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
+    col_man1, col_man2 = st.columns([1, 3])
+    with col_man1:
+        if st.button("📥 Baixar Manual (Cloud)", help="Tenta baixar o manual do servidor GitHub"):
+            with st.spinner("Baixando manual do repositório..."):
+                import requests
+                try:
+                    response = requests.get(url_manual)
+                    if response.status_code == 200:
+                        st.download_button(
+                            label="✅ Clique para Baixar",
+                            data=response.content,
+                            file_name="Manual_CALC_MARKUP.pdf",
+                            mime="application/pdf",
+                            key="download_manual_cloud"
+                        )
+                        st.success("Manual pronto para download.")
+                    else:
+                        st.error(f"⚠️ Erro ao acessar o arquivo no GitHub (Código: {response.status_code}).")
+                except Exception as e:
+                    st.error(f"⚠️ Erro crítico: {e}")
+    with col_man2:
+        st.info("ℹ️ O manual é baixado diretamente do seu repositório GitHub.")
