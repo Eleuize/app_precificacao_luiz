@@ -7,6 +7,7 @@ import os
 import hashlib
 from datetime import datetime
 
+# ===== CONFIGURAÇÃO INICIAL DA PÁGINA =====
 st.set_page_config(
     page_title="CALC MARKUP | LM Importing",
     page_icon="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png",
@@ -24,7 +25,7 @@ st.markdown("""
 # ================== ESTILOS GLOBAIS ==================
 st.markdown("""
 <style>
-    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; }
+    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; border: none; }
     .stButton > button:hover { background-color: #45a049; }
     .stTextInput > div > div > input { border-radius: 8px; }
     .stSelectbox > div > div > select { border-radius: 8px; }
@@ -77,6 +78,19 @@ st.markdown("""
     [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
         background-color: #2c2c2c !important;
     }
+
+    /* ===== BOTÃO ESPECÍFICO DO MENU LATERAL (SAIR / TROCAR USUÁRIO) ===== */
+    div[data-testid="stSidebar"] .stButton > button {
+        background-color: #3b3b3b !important;
+        color: #FFFFFF !important;
+        border: 1px solid #555555 !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stSidebar"] .stButton > button:hover {
+        background-color: #4f4f4f !important;
+        color: #FFFFFF !important;
+        border: 1px solid #777777 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -85,7 +99,6 @@ def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
 def carregar_usuarios():
-    # Base padrão garantida sempre que reiniciar
     usuarios_padrao = {
         "admin": {
             "nome": "Administrador",
@@ -103,7 +116,6 @@ def carregar_usuarios():
         try:
             with open("usuarios.json", "r") as f:
                 dados = json.load(f)
-                # Garante que os admins padrão sempre existam
                 for k, v in usuarios_padrao.items():
                     if k not in dados:
                         dados[k] = v
@@ -118,7 +130,6 @@ def salvar_usuarios(usuarios_db):
     with open("usuarios.json", "w") as f:
         json.dump(usuarios_db, f, indent=4)
 
-# Inicializa session_state para usuários
 if "usuarios_db_v3" not in st.session_state:
     st.session_state.usuarios_db_v3 = carregar_usuarios()
 
@@ -213,32 +224,13 @@ st.sidebar.markdown(f"""
 <p style='font-size: 13px; color: #ffffff; text-align: center;'>👤 <b>{st.session_state.nome_usuario_atual}</b><br><span style='color: #4CAF50; font-size: 11px;'>({st.session_state.tipo_usuario})</span></p>
 """, unsafe_allow_html=True)
 
-# ========== BOTÃO SAIR / TROCAR USUÁRIO (MODIFICADO) ==========
-if st.sidebar.button("📓 Sair / Trocar Usuário"):
+# Botão de Sair com o ícone de caderneta com caneta (📝) e cor cinza chumbo ajustada pelo CSS
+if st.sidebar.button("📝 Sair / Trocar Usuário"):
     st.session_state.autenticado = False
     st.session_state.usuario_atual = None
     st.session_state.nome_usuario_atual = None
     st.session_state.tipo_usuario = None
     st.rerun()
-
-# ========== ESTILO PERSONALIZADO PARA O BOTÃO (CINZA CHUMBO E LETRA BRANCA) ==========
-st.markdown("""
-<style>
-    /* Força o botão de sair a ter fundo cinza chumbo e letras brancas */
-    div[data-testid="stSidebar"] div.stButton > button {
-        background-color: #2c2c2c !important;
-        color: #ffffff !important;
-        border: 1px solid #444444 !important;
-        font-weight: bold !important;
-        font-size: 16px !important;
-    }
-    div[data-testid="stSidebar"] div.stButton > button:hover {
-        background-color: #3c3c3c !important;
-        color: #ffffff !important;
-        border-color: #666666 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
     "Navegação",
@@ -442,7 +434,6 @@ elif pagina == "📊 Relatório":
 elif pagina == "⚙️ Configurações":
     st.title("⚙️ Configurações")
     
-    # Gerenciamento de Usuários (EXCLUSIVO PARA ADMINISTRADORES)
     if st.session_state.tipo_usuario == "Administrador":
         st.subheader("👥 Gerenciamento de Usuários e Acessos")
         with st.form("form_novo_usuario"):
@@ -470,7 +461,6 @@ elif pagina == "⚙️ Configurações":
         
         st.markdown("---")
         
-        # Alterar Senha de Qualquer Usuário
         with st.form("form_alterar_senha"):
             st.markdown("**🔑 Alterar Senha de Usuário**")
             usuarios_lista = list(st.session_state.usuarios_db_v3.keys())
@@ -544,7 +534,6 @@ elif pagina == "⚙️ Configurações":
             json.dump(config, f)
         st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
 
-    # ===== MANUAL DO USUÁRIO =====
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
     try:
@@ -556,4 +545,4 @@ elif pagina == "⚙️ Configurações":
                 mime="application/pdf"
             )
     except FileNotFoundError:
-        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado.")
+        st.warning("⚠️ Arquivo 'Manual_CALC_MARKUP.pdf' não encontrado no repositório.")
