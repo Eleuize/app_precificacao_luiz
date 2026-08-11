@@ -6,7 +6,7 @@ import json
 import os
 import hashlib
 from datetime import datetime
-import math  # <=== NOVO: import math para usar ceil() nos cálculos
+import math
 
 # ===== CONFIGURAÇÃO INICIAL DA PÁGINA =====
 st.set_page_config(
@@ -26,7 +26,6 @@ st.markdown("""
 # ================== ESTILOS GLOBAIS ==================
 st.markdown("""
 <style>
-    /* Estilo padrão para botões fora da barra lateral */
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; border: none; }
     .stButton > button:hover { background-color: #45a049; }
     .stTextInput > div > div > input { border-radius: 8px; }
@@ -312,7 +311,7 @@ elif pagina == "📝 Cadastrar Produto":
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
-    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace")
+    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace,Modo_Venda,Tamanho_Kit,Preco_Base")
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
@@ -321,7 +320,7 @@ elif pagina == "📥 Importar CSV":
             df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
             df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
             df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Registrado_Por", "Data_Hora"]]
+            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Modo_Venda", "Tamanho_Kit", "Preco_Base"]]
             df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
             salvar_produtos(df_produtos)
             st.success(f"✅ {len(df_import)} produtos importados por {st.session_state.nome_usuario_atual}!")
@@ -545,4 +544,10 @@ elif pagina == "⚙️ Configurações":
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
     url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
-    col_man1, col_
+    col_man1, col_man2 = st.columns([1, 3])
+    with col_man1:
+        if st.button("📥 Baixar Manual (Cloud)", help="Tenta baixar o manual do servidor GitHub"):
+            with st.spinner("Baixando manual do repositório..."):
+                import requests
+                try:
+                    response = requests.get(url_manual)
