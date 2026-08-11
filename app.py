@@ -122,6 +122,7 @@ def carregar_usuarios():
         try:
             with open("usuarios.json", "r") as f:
                 dados = json.load(f)
+                # Atualiza com novos usuários padrão se faltarem
                 for k, v in usuarios_padrao.items():
                     if k not in dados:
                         dados[k] = v
@@ -166,7 +167,7 @@ if not st.session_state.autenticado:
                     st.session_state.nome_usuario_atual = usuarios_db[usuario_input].get("nome", usuario_input)
                     st.session_state.tipo_usuario = usuarios_db[usuario_input]["tipo"]
                     st.success("Login realizado com sucesso!")
-                    st.rerun()
+                    st.experimental_rerun()
                 else:
                     st.error("⚠️ Usuário ou senha incorretos.")
         
@@ -175,24 +176,29 @@ if not st.session_state.autenticado:
 # ================== FUNÇÕES DE CONFIGURAÇÃO E DADOS ==================
 def carregar_config():
     if os.path.exists("config.json"):
-        with open("config.json", "r") as f:
-            return json.load(f)
-    else:
-        config = {
-            "custos_fixos": {"aluguel": 90, "pro_labore": 120, "contabilidade": 352, "internet": 90, "logistica": 250, "outros": 300},
-            "impostos": {"ii": 0, "ipi": 0, "icms": 4.5, "pis": 0, "cofins": 0, "iof": 0},
-            "marketplaces": {"Mercado Livre": {"comissao": 6.75, "taxa_fixa": 0.13}, "Shopee": {"comissao": 4.0, "taxa_fixa": 0.20}, "Amazon": {"comissao": 4.5, "taxa_fixa": 0.15}},
-            "cotacao_dolar": 5.30
-        }
-        with open("config.json", "w") as f:
-            json.dump(config, f)
-        return config
+        try:
+            with open("config.json", "r") as f:
+                return json.load(f)
+        except:
+            pass
+    config = {
+        "custos_fixos": {"aluguel": 90, "pro_labore": 120, "contabilidade": 352, "internet": 90, "logistica": 250, "outros": 300},
+        "impostos": {"ii": 0, "ipi": 0, "icms": 4.5, "pis": 0, "cofins": 0, "iof": 0},
+        "marketplaces": {"Mercado Livre": {"comissao": 6.75, "taxa_fixa": 0.13}, "Shopee": {"comissao": 4.0, "taxa_fixa": 0.20}, "Amazon": {"comissao": 4.5, "taxa_fixa": 0.15}},
+        "cotacao_dolar": 5.30
+    }
+    with open("config.json", "w") as f:
+        json.dump(config, f, indent=4)
+    return config
 
 def carregar_produtos():
     if os.path.exists("produtos.csv"):
-        return pd.read_csv("produtos.csv")
+        try:
+            return pd.read_csv("produtos.csv")
+        except:
+            return pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace", "Registrado_Por", "Data_Hora"])
     else:
-        df = pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Registrado_Por", "Data_Hora"])
+        df = pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace", "Registrado_Por", "Data_Hora"])
         df.to_csv("produtos.csv", index=False)
         return df
 
@@ -201,8 +207,12 @@ def salvar_produtos(df):
 
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
+    # Corrigindo nomes de colunas com padrão percentual para coerência
+    cofins = row.get("COFINS_%", 0) if "COFINS_%" in row else row.get("COFINS_", 0)
+    iof = row.get("IOF_%", 0) if "IOF_%" in row else row.get("IOF_", 0)
+
     custo_brl = (row["Custo_USD"] + row["Frete_USD"]) * cotacao * (1 + config["impostos"]["iof"] / 100)
-    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + row["COFINS_"] + row["IOF_"]) / 100
+    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + cofins + iof) / 100
     custo_fixo_total = sum(config["custos_fixos"].values())
     custo_fixo_unit = custo_fixo_total / vendas_mes if vendas_mes > 0 else 0
     custo_total = custo_brl + impostos + row["Embalagem_R$"] + custo_fixo_unit
@@ -235,7 +245,7 @@ if st.sidebar.button("📝 Sair / Trocar Usuário"):
     st.session_state.usuario_atual = None
     st.session_state.nome_usuario_atual = None
     st.session_state.tipo_usuario = None
-    st.rerun()
+    st.experimental_rerun()
 
 pagina = st.sidebar.radio(
     "Navegação",
@@ -285,11 +295,17 @@ elif pagina == "📝 Cadastrar Produto":
             ipi = st.number_input("IPI %", min_value=0.0, step=0.1)
             icms = st.number_input("ICMS %", min_value=0.0, step=0.1)
             pis = st.number_input("PIS %", min_value=0.0, step=0.1)
-            cofins = st.number_input("COFINS", min_value=0.0, step=0.1)
-            iof = st.number_input("IOF", min_value=0.0, step=0.1)
+            cofins = st.number_input("COFINS %", min_value=0.0, step=0.1)
+            iof = st.number_input("IOF %", min_value=0.0, step=0.1)
         submit = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
         if submit:
-            novo_id = int(df_produtos["ID"].max() + 1) if not df_produtos.empty and "ID" in df_produtos.columns else 1
+            if df_produtos.empty or "ID" not in df_produtos.columns:
+                novo_id = 1
+            else:
+                # Garantindo que ID seja numérico e sem NaNs
+                ids_validos = pd.to_numeric(df_produtos["ID"], errors='coerce').dropna()
+                novo_id = int(ids_validos.max()) + 1 if not ids_validos.empty else 1
+
             novo_produto = pd.DataFrame({
                 "ID": [novo_id], 
                 "Nome": [nome], 
@@ -300,8 +316,8 @@ elif pagina == "📝 Cadastrar Produto":
                 "IPI_%": [ipi], 
                 "ICMS_%": [icms],
                 "PIS_%": [pis], 
-                "COFINS_": [cofins], 
-                "IOF_": [iof], 
+                "COFINS_%": [cofins], 
+                "IOF_%": [iof], 
                 "Marketplace": [marketplace],
                 "Registrado_Por": [st.session_state.nome_usuario_atual],
                 "Data_Hora": [datetime.now().strftime("%d/%m/%Y %H:%M")]
@@ -312,36 +328,50 @@ elif pagina == "📝 Cadastrar Produto":
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
-    st.markdown("Formato: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace,Modo_Venda,Tamanho_Kit,Preco_Base")
+    st.markdown("Formato esperado das colunas: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_%,IOF_%,Marketplace")
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
             df_import = pd.read_csv(arquivo)
-            ultimo_id = int(df_produtos["ID"].max()) if not df_produtos.empty and "ID" in df_produtos.columns else 0
-            df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
-            df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
-            df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-            df_import = df_import[["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Modo_Venda", "Tamanho_Kit", "Preco_Base"]]
-            df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
-            salvar_produtos(df_produtos)
-            st.success(f"✅ {len(df_import)} produtos importados por {st.session_state.nome_usuario_atual}!")
+            # Verificar colunas obrigatórias
+            col_obrigatorias = ["Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace"]
+            falta_colunas = [col for col in col_obrigatorias if col not in df_import.columns]
+            if falta_colunas:
+                st.error(f"Colunas faltando no arquivo CSV: {', '.join(falta_colunas)}")
+            else:
+                ultimo_id = int(pd.to_numeric(df_produtos["ID"], errors='coerce').dropna().max()) if not df_produtos.empty and "ID" in df_produtos.columns else 0
+                df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
+                df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
+                df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                # Selecionar somente colunas esperadas mais ID e auditoria
+                colunas_para_manter = ["ID"] + col_obrigatorias + ["Registrado_Por", "Data_Hora"]
+                df_import = df_import[colunas_para_manter]
+                df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
+                salvar_produtos(df_produtos)
+                st.success(f"✅ {len(df_import)} produtos importados por {st.session_state.nome_usuario_atual}!")
         except Exception as e:
-            st.error(f"Erro: {e}")
+            st.error(f"Erro ao importar CSV: {e}")
 
 elif pagina == "📦 Produtos":
     st.title("📦 Lista de Produtos e Auditoria")
     if not df_produtos.empty:
+        # Mostra Produto com ID para evitar ambiguidades ao deletar
+        df_exibir = df_produtos.copy()
+        df_exibir["Nome_Completo"] = df_exibir.apply(lambda x: f"{x['ID']} - {x['Nome']}", axis=1)
         st.dataframe(df_produtos, use_container_width=True, height=400)
         if st.button("📥 Exportar para Excel"):
             df_produtos.to_excel("produtos_exportados.xlsx", index=False)
             st.success("Arquivo exportado!")
+
         with st.expander("🗑️ Deletar Produto"):
-            produto_del = st.selectbox("Selecione o produto", df_produtos["Nome"].tolist())
+            produto_del = st.selectbox("Selecione o produto para deletar", df_exibir["Nome_Completo"].tolist())
             if st.button("Deletar", type="primary"):
-                df_produtos = df_produtos[df_produtos["Nome"] != produto_del]
-                salvar_produtos(df_produtos)
-                st.success(f"Produto deletado por {st.session_state.nome_usuario_atual}")
-                st.rerun()
+                if produto_del:
+                    id_del = int(produto_del.split(" - ")[0])
+                    df_produtos = df_produtos[df_produtos["ID"] != id_del]
+                    salvar_produtos(df_produtos)
+                    st.success(f"Produto ID {id_del} deletado por {st.session_state.nome_usuario_atual}")
+                    st.experimental_rerun()
     else:
         st.info("Nenhum produto cadastrado.")
 
@@ -490,7 +520,8 @@ elif pagina == "⚙️ Configurações":
             col_u1.write(f"👤 **{info.get('nome', usr)}**")
             col_u2.write(f"Login: `{usr}`")
             col_u3.write(f"Tipo: {info['tipo']}")
-            if usr != "admin" or len(st.session_state.usuarios_db_v3) > 1:
+            # Não permitir deletar o usuário admin em hipótese alguma
+            if usr != "admin":
                 if col_u4.button("🗑️ Deletar", key=f"del_{usr}"):
                     if usr == st.session_state.usuario_atual:
                         st.error("⚠️ Você não pode deletar o seu próprio usuário logado.")
@@ -498,7 +529,7 @@ elif pagina == "⚙️ Configurações":
                         del st.session_state.usuarios_db_v3[usr]
                         salvar_usuarios(st.session_state.usuarios_db_v3)
                         st.success(f"Usuário {usr} removido!")
-                        st.rerun()
+                        st.experimental_rerun()
         st.markdown("---")
     else:
         st.info("ℹ️ Apenas o Administrador pode cadastrar novos usuários, alterar senhas ou remover acessos.")
@@ -538,10 +569,17 @@ elif pagina == "⚙️ Configurações":
     
     if st.button("💾 Salvar Configurações", use_container_width=True):
         with open("config.json", "w") as f:
-            json.dump(config, f)
+            json.dump(config, f, indent=4)
         st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
 
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
     url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
-    col_man1, col_man2 = st.columns([1, 3
+    col_man1, col_man2 = st.columns([1, 3])
+    with col_man1:
+        st.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=90)
+    with col_man2:
+        st.markdown(f"[📄 Abrir Manual do Usuário]({url_manual})", unsafe_allow_html=True)
+
+# Aqui pode adicionar conteúdo para "📦 Atacado" ou outras páginas se desejar.
+
