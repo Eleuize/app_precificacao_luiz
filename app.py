@@ -530,18 +530,4 @@ elif pagina == "⚙️ Configurações":
         col1, col2 = st.columns(2)
         with col1:
             config["marketplaces"][mp]["comissao"] = st.number_input(f"{mp} - Comissão %", value=float(config["marketplaces"][mp]["comissao"]))
-        with col2:
-            config["marketplaces"][mp]["taxa_fixa"] = st.number_input(f"{mp} - Taxa Fixa R$", value=float(config["marketplaces"][mp]["taxa_fixa"]))
-            
-    st.subheader("💱 Cotação")
-    config["cotacao_dolar"] = st.number_input("Cotação do Dólar (R$)", value=float(config["cotacao_dolar"]), step=0.01)
-    
-    if st.button("💾 Salvar Configurações", use_container_width=True):
-        with open("config.json", "w") as f:
-            json.dump(config, f)
-        st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
-
-    st.markdown("---")
-    st.subheader("📘 Manual do Usuário")
-    url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
-    col_man1, col_man2 = st.columns([1, 3
+        with col2
