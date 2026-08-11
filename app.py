@@ -167,7 +167,7 @@ if not st.session_state.autenticado:
                     st.session_state.nome_usuario_atual = usuarios_db[usuario_input].get("nome", usuario_input)
                     st.session_state.tipo_usuario = usuarios_db[usuario_input]["tipo"]
                     st.success("Login realizado com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()  # <--- CORREÇÃO AQUI (era experimental_rerun)
                 else:
                     st.error("⚠️ Usuário ou senha incorretos.")
         
@@ -185,7 +185,8 @@ def carregar_config():
         "custos_fixos": {"aluguel": 90, "pro_labore": 120, "contabilidade": 352, "internet": 90, "logistica": 250, "outros": 300},
         "impostos": {"ii": 0, "ipi": 0, "icms": 4.5, "pis": 0, "cofins": 0, "iof": 0},
         "marketplaces": {"Mercado Livre": {"comissao": 6.75, "taxa_fixa": 0.13}, "Shopee": {"comissao": 4.0, "taxa_fixa": 0.20}, "Amazon": {"comissao": 4.5, "taxa_fixa": 0.15}},
-        "cotacao_dolar": 5.30
+        "cotacao_dolar": 5.30,
+        "ultimo_id": 0  # <--- MELHORIA: Adicionado para controle seguro de IDs
     }
     with open("config.json", "w") as f:
         json.dump(config, f, indent=4)
@@ -204,6 +205,13 @@ def carregar_produtos():
 
 def salvar_produtos(df):
     df.to_csv("produtos.csv", index=False)
+
+def gerar_novo_id():  # <--- MELHORIA: Função para gerar ID de forma persistente
+    config = carregar_config()
+    config["ultimo_id"] = config.get("ultimo_id", 0) + 1
+    with open("config.json", "w") as f:
+        json.dump(config, f, indent=4)
+    return config["ultimo_id"]
 
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
@@ -245,7 +253,7 @@ if st.sidebar.button("📝 Sair / Trocar Usuário"):
     st.session_state.usuario_atual = None
     st.session_state.nome_usuario_atual = None
     st.session_state.tipo_usuario = None
-    st.experimental_rerun()
+    st.rerun()  # <--- CORREÇÃO AQUI (era experimental_rerun)
 
 pagina = st.sidebar.radio(
     "Navegação",
@@ -299,12 +307,8 @@ elif pagina == "📝 Cadastrar Produto":
             iof = st.number_input("IOF %", min_value=0.0, step=0.1)
         submit = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
         if submit:
-            if df_produtos.empty or "ID" not in df_produtos.columns:
-                novo_id = 1
-            else:
-                # Garantindo que ID seja numérico e sem NaNs
-                ids_validos = pd.to_numeric(df_produtos["ID"], errors='coerce').dropna()
-                novo_id = int(ids_validos.max()) + 1 if not ids_validos.empty else 1
+            # <--- MELHORIA: Usando a função gerar_novo_id em vez de calcular pelo DataFrame
+            novo_id = gerar_novo_id()
 
             novo_produto = pd.DataFrame({
                 "ID": [novo_id], 
@@ -339,8 +343,12 @@ elif pagina == "📥 Importar CSV":
             if falta_colunas:
                 st.error(f"Colunas faltando no arquivo CSV: {', '.join(falta_colunas)}")
             else:
-                ultimo_id = int(pd.to_numeric(df_produtos["ID"], errors='coerce').dropna().max()) if not df_produtos.empty and "ID" in df_produtos.columns else 0
-                df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
+                # <--- MELHORIA: Gerando IDs com a função segura
+                ids_gerados = []
+                for _ in range(len(df_import)):
+                    ids_gerados.append(gerar_novo_id())
+                
+                df_import["ID"] = ids_gerados
                 df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
                 df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                 # Selecionar somente colunas esperadas mais ID e auditoria
@@ -371,7 +379,7 @@ elif pagina == "📦 Produtos":
                     df_produtos = df_produtos[df_produtos["ID"] != id_del]
                     salvar_produtos(df_produtos)
                     st.success(f"Produto ID {id_del} deletado por {st.session_state.nome_usuario_atual}")
-                    st.experimental_rerun()
+                    st.rerun()  # <--- CORREÇÃO AQUI (era experimental_rerun)
     else:
         st.info("Nenhum produto cadastrado.")
 
@@ -529,7 +537,7 @@ elif pagina == "⚙️ Configurações":
                         del st.session_state.usuarios_db_v3[usr]
                         salvar_usuarios(st.session_state.usuarios_db_v3)
                         st.success(f"Usuário {usr} removido!")
-                        st.experimental_rerun()
+                        st.rerun()  # <--- CORREÇÃO AQUI (era experimental_rerun)
         st.markdown("---")
     else:
         st.info("ℹ️ Apenas o Administrador pode cadastrar novos usuários, alterar senhas ou remover acessos.")
@@ -543,43 +551,5 @@ elif pagina == "⚙️ Configurações":
     with col2:
         config["custos_fixos"]["internet"] = st.number_input("Internet", value=float(config["custos_fixos"]["internet"]))
         config["custos_fixos"]["logistica"] = st.number_input("Logística", value=float(config["custos_fixos"]["logistica"]))
-        config["custos_fixos"]["outros"] = st.number_input("Outros", value=float(config["custos_fixos"]["outros"]))
-    
-    st.subheader("📊 Impostos (%)")
-    col1, col2 = st.columns(2)
-    with col1:
-        config["impostos"]["ii"] = st.number_input("II", value=float(config["impostos"]["ii"]))
-        config["impostos"]["ipi"] = st.number_input("IPI", value=float(config["impostos"]["ipi"]))
-        config["impostos"]["icms"] = st.number_input("ICMS", value=float(config["impostos"]["icms"]))
-    with col2:
-        config["impostos"]["pis"] = st.number_input("PIS", value=float(config["impostos"]["pis"]))
-        config["impostos"]["cofins"] = st.number_input("COFINS", value=float(config["impostos"]["cofins"]))
-        config["impostos"]["iof"] = st.number_input("IOF", value=float(config["impostos"]["iof"]))
-        
-    st.subheader("🏪 Marketplaces")
-    for mp in config["marketplaces"]:
-        col1, col2 = st.columns(2)
-        with col1:
-            config["marketplaces"][mp]["comissao"] = st.number_input(f"{mp} - Comissão %", value=float(config["marketplaces"][mp]["comissao"]))
-        with col2:
-            config["marketplaces"][mp]["taxa_fixa"] = st.number_input(f"{mp} - Taxa Fixa R$", value=float(config["marketplaces"][mp]["taxa_fixa"]))
-            
-    st.subheader("💱 Cotação")
-    config["cotacao_dolar"] = st.number_input("Cotação do Dólar (R$)", value=float(config["cotacao_dolar"]), step=0.01)
-    
-    if st.button("💾 Salvar Configurações", use_container_width=True):
-        with open("config.json", "w") as f:
-            json.dump(config, f, indent=4)
-        st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
-
-    st.markdown("---")
-    st.subheader("📘 Manual do Usuário")
-    url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
-    col_man1, col_man2 = st.columns([1, 3])
-    with col_man1:
-        st.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=90)
-    with col_man2:
-        st.markdown(f"[📄 Abrir Manual do Usuário]({url_manual})", unsafe_allow_html=True)
-
-# Aqui pode adicionar conteúdo para "📦 Atacado" ou outras páginas se desejar.
+        config["custos_fixos"]["outros"] = st.number_input("Outros", value=float(config["custos_fix
 
