@@ -6,6 +6,7 @@ import json
 import os
 import hashlib
 from datetime import datetime
+import math  # <=== NOVO: import math para usar ceil() nos cálculos
 
 # ===== CONFIGURAÇÃO INICIAL DA PÁGINA =====
 st.set_page_config(
@@ -238,7 +239,7 @@ if st.sidebar.button("📝 Sair / Trocar Usuário"):
 
 pagina = st.sidebar.radio(
     "Navegação",
-    ["🏠 Início", "📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações"]
+    ["🏠 Início", "📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações", "📦 Atacado"]
 )
 
 config = carregar_config()
@@ -544,25 +545,4 @@ elif pagina == "⚙️ Configurações":
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
     url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
-    col_man1, col_man2 = st.columns([1, 3])
-    with col_man1:
-        if st.button("📥 Baixar Manual (Cloud)", help="Tenta baixar o manual do servidor GitHub"):
-            with st.spinner("Baixando manual do repositório..."):
-                import requests
-                try:
-                    response = requests.get(url_manual)
-                    if response.status_code == 200:
-                        st.download_button(
-                            label="✅ Clique para Baixar",
-                            data=response.content,
-                            file_name="Manual_CALC_MARKUP.pdf",
-                            mime="application/pdf",
-                            key="download_manual_cloud"
-                        )
-                        st.success("Manual pronto para download.")
-                    else:
-                        st.error(f"⚠️ Erro ao acessar o arquivo no GitHub (Código: {response.status_code}).")
-                except Exception as e:
-                    st.error(f"⚠️ Erro crítico: {e}")
-    with col_man2:
-        st.info("ℹ️ O manual é baixado diretamente do seu repositório GitHub.")
+    col_man1, col_
