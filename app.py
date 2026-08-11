@@ -26,6 +26,7 @@ st.markdown("""
 # ================== ESTILOS GLOBAIS ==================
 st.markdown("""
 <style>
+    /* Estilo padrão para botões fora da barra lateral */
     .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; border: none; }
     .stButton > button:hover { background-color: #45a049; }
     .stTextInput > div > div > input { border-radius: 8px; }
@@ -369,7 +370,6 @@ elif pagina == "🏠 Dashboard":
         
         cores_marketplace = {"Mercado Livre": "#FFD700", "Shopee": "#FF8C00", "Amazon": "#1A1A1A"}
         
-        # Correção segura para garantir que marketplaces sem cor mapeada recebam um tom padrão cinza
         lista_cores_final = [cores_marketplace.get(m, "#808080") for m in df_pizza["Marketplace"]]
         
         fig_pizza = go.Figure(data=[go.Pie(
@@ -544,10 +544,4 @@ elif pagina == "⚙️ Configurações":
     st.markdown("---")
     st.subheader("📘 Manual do Usuário")
     url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
-    col_man1, col_man2 = st.columns([1, 3])
-    with col_man1:
-        if st.button("📥 Baixar Manual (Cloud)", help="Tenta baixar o manual do servidor GitHub"):
-            with st.spinner("Baixando manual do repositório..."):
-                import requests
-                try:
-                    response = requests.get(url_manual)
+    col_man1, col_man2 = st.columns([1, 3
