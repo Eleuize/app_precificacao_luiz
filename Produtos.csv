@@ -1,0 +1,10 @@
+ID;Nome;Custo_USD;Frete_USD;Embalagem_R$;II_%;IPI_%;ICMS_%;PIS_%;COFINS_;IOF_;Marketplace;Modo_Venda;Tamanho_Kit;Preco_Base
+1;Protetor de Privacidade Câmera 5un;1.28;4.00;0.50;0;0;4.5;0;0;0;Shopee;UNIDADE;5;29.90
+2;Protetor de Privacidade Câmera 10un;2.55;4.00;0.50;0;0;4.5;0;0;0;Shopee;UNIDADE;5;29.90
+3;Protetor de Privacidade Câmera 15un;3.83;4.00;0.50;0;0;4.5;0;0;0;Shopee;UNIDADE;5;29.90
+4;Protetor de Privacidade Câmera 5un;1.28;6.25;0.50;0;0;4.5;0;0;0;Mercado Livre;UNIDADE;5;29.90
+5;Protetor de Privacidade Câmera 10un;2.55;6.25;0.50;0;0;4.5;0;0;0;Mercado Livre;UNIDADE;5;29.90
+6;Protetor de Privacidade Câmera 15un;3.83;6.25;0.50;0;0;4.5;0;0;0;Mercado Livre;UNIDADE;5;29.90
+7;Protetor de Privacidade Câmera 5un;1.28;12.35;0.50;0;0;4.5;0;0;0;Mercado Livre Premium;UNIDADE;5;29.90
+8;Protetor de Privacidade Câmera 10un;2.55;12.35;0.50;0;0;4.5;0;0;0;Mercado Livre Premium;UNIDADE;5;29.90
+9;Protetor de Privacidade Câmera 15un;3.83;12.35;0.50;0;0;4.5;0;0;0;Mercado Livre Premium;UNIDADE;5;29.90
