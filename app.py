@@ -1,412 +1,584 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import json
 import os
-import pandas as pd
-import streamlit as st
+import hashlib
+from datetime import datetime
+import math
 
-# Configuração da Página
+# ===== CONFIGURAÇÃO INICIAL DA PÁGINA =====
 st.set_page_config(
-    page_title="Calc Markup - Gestão de Precificação",
-    page_icon="📊",
+    page_title="CALC MARKUP | LM Importing",
+    page_icon="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png",
     layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Arquivos de Persistência
-USERS_FILE = "users.json"
-PRODUCTS_FILE = "produtos_markup.csv"
-MANUAL_FILE = "Manual_CALC_MARKUP.pdf"
+# ===== CONFIGURAÇÃO DE ÍCONE E MANIFESTO PARA CELULAR/TABLET/PWA =====
+st.markdown("""
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png">
+""", unsafe_allow_html=True)
 
+# ================== ESTILOS GLOBAIS ==================
+st.markdown("""
+<style>
+    /* Estilo padrão para botões fora da barra lateral */
+    .stButton > button { width: 100%; height: 50px; font-weight: bold; font-size: 16px; border-radius: 10px; background-color: #4CAF50; color: white; border: none; }
+    .stButton > button:hover { background-color: #45a049; }
+    .stTextInput > div > div > input { border-radius: 8px; }
+    .stSelectbox > div > div > select { border-radius: 8px; }
+    .card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-# Inicialização de Arquivos
-def init_files():
-  if not os.path.exists(USERS_FILE):
-    default_users = {"admin": "123456"}
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-      json.dump(default_users, f, ensure_ascii=False, indent=4)
+    /* ===== MENU LATERAL (CINZA CHUMBO COM LETRAS BRANCAS) ===== */
+    [data-testid="stSidebar"] {
+        background-color: #2c2c2c !important;
+    }
+    /* Força as letras do menu a serem BRANCAS */
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+    /* Mantém o subtítulo em cinza claro para dar elegância */
+    [data-testid="stSidebar"] p {
+        color: #cccccc !important;
+    }
 
-  if not os.path.exists(PRODUCTS_FILE):
-    df_empty = pd.DataFrame(
-        columns=[
-            "Produto",
-            "SKU",
-            "Custo_USD",
-            "Dolar",
-            "Frete_Impostos",
-            "Embalagem",
-            "Custo_Fixo_Pct",
-            "Comissao_Mkt",
-            "Imposto_Venda",
-            "Lucro_Desejado",
-            "Tarifa_Fixa",
-            "Preco_Venda",
-            "Markup",
-            "Tipo",
-        ]
-    )
-    df_empty.to_csv(PRODUCTS_FILE, index=False)
+    /* ===== TARJA PRETA NO MENU (SEM NENHUMA BORDA VISÍVEL) ===== */
+    [data-testid="stSidebar"] label {
+        color: #ffffff !important;
+        background-color: #2c2c2c !important;
+        padding: 0px !important;
+    }
 
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] {
+        background-color: #111111 !important;
+        border-radius: 6px !important;
+        border: none !important;
+        padding: 0px !important;
+        box-shadow: none !important;
+    }
 
-init_files()
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] input {
+        color: #ffffff !important;
+        background-color: #111111 !important;
+        border: none !important;
+        outline: none !important;
+        caret-color: #ffffff !important;
+        box-shadow: none !important;
+    }
 
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] button {
+        background-color: #111111 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 0px !important;
+        box-shadow: none !important;
+    }
+    [data-testid="stSidebar"] div[data-testid="stNumberInput"] button:hover {
+        background-color: #2c2c2c !important;
+    }
 
-# Funções de Autenticação
-def load_users():
-  with open(USERS_FILE, "r", encoding="utf-8") as f:
-    return json.load(f)
+    /* ===== BOTÃO ESPECÍFICO DO MENU LATERAL (SAIR / TROCAR USUÁRIO) - SOBRESCREVENDO O VERDE ===== */
+    [data-testid="stSidebar"] button,
+    section[data-testid="stSidebar"] .stButton button,
+    [data-testid="stSidebar"] .stButton > button {
+        background-color: #3b3b3b !important;
+        color: #FFFFFF !important;
+        border: 1px solid #555555 !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stSidebar"] button:hover,
+    section[data-testid="stSidebar"] .stButton button:hover,
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background-color: #4f4f4f !important;
+        color: #FFFFFF !important;
+        border: 1px solid #777777 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
+# ================== GERENCIAMENTO DE USUÁRIOS (PERSISTENTE) ==================
+def hash_senha(senha):
+    return hashlib.sha256(senha.encode()).hexdigest()
 
-def save_user(username, password):
-  users = load_users()
-  users[username] = password
-  with open(USERS_FILE, "w", encoding="utf-8") as f:
-    json.dump(users, f, ensure_ascii=False, indent=4)
+def carregar_usuarios():
+    usuarios_padrao = {
+        "admin": {
+            "nome": "Administrador",
+            "senha": hash_senha("admin123"),
+            "tipo": "Administrador"
+        },
+        "eleuize": {
+            "nome": "Eleuize",
+            "senha": hash_senha("X@drez21"),
+            "tipo": "Administrador"
+        }
+    }
+    
+    if os.path.exists("usuarios.json"):
+        try:
+            with open("usuarios.json", "r") as f:
+                dados = json.load(f)
+                # Atualiza com novos usuários padrão se faltarem
+                for k, v in usuarios_padrao.items():
+                    if k not in dados:
+                        dados[k] = v
+                return dados
+        except:
+            pass
+            
+    salvar_usuarios(usuarios_padrao)
+    return usuarios_padrao
 
+def salvar_usuarios(usuarios_db):
+    with open("usuarios.json", "w") as f:
+        json.dump(usuarios_db, f, indent=4)
 
-# Função de Cálculo de Preço
-def calcular_preco(
-    custo_usd,
-    dolar,
-    frete_impostos_brl,
-    embalagem,
-    custo_fixo_pct,
-    comissao_mkt_pct,
-    imposto_venda_pct,
-    lucro_desejado_pct,
-    tarifa_fixa,
-):
-  custo_produto_brl = (custo_usd * dolar) + frete_impostos_brl + embalagem
+if "usuarios_db_v3" not in st.session_state:
+    st.session_state.usuarios_db_v3 = carregar_usuarios()
 
-  soma_aliquotas = (
-      comissao_mkt_pct + imposto_venda_pct + custo_fixo_pct + lucro_desejado_pct
-  ) / 100
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+    st.session_state.usuario_atual = None
+    st.session_state.nome_usuario_atual = None
+    st.session_state.tipo_usuario = None
 
-  if soma_aliquotas >= 1:
-    return 0, 0
+# ================== TELA DE LOGIN ==================
+if not st.session_state.autenticado:
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center;'>🔐 Acesso Restrito - CALC MARKUP</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #666;'>Entre com suas credenciais para continuar.</p>", unsafe_allow_html=True)
+        
+        with st.form("form_login"):
+            usuario_input = st.text_input("Usuário (Login)")
+            senha_input = st.text_input("Senha", type="password")
+            botao_login = st.form_submit_button("Entrar no Sistema", use_container_width=True)
+            
+            if botao_login:
+                usuarios_db = st.session_state.usuarios_db_v3
+                if usuario_input in usuarios_db and usuarios_db[usuario_input]["senha"] == hash_senha(senha_input):
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_atual = usuario_input
+                    st.session_state.nome_usuario_atual = usuarios_db[usuario_input].get("nome", usuario_input)
+                    st.session_state.tipo_usuario = usuarios_db[usuario_input]["tipo"]
+                    st.success("Login realizado com sucesso!")
+                    st.experimental_rerun()
+                else:
+                    st.error("⚠️ Usuário ou senha incorretos.")
+        
+        st.stop()
 
-  divisor = 1 - soma_aliquotas
-  preco_venda = (custo_produto_brl + tarifa_fixa) / divisor
+# ================== FUNÇÕES DE CONFIGURAÇÃO E DADOS ==================
+def carregar_config():
+    if os.path.exists("config.json"):
+        try:
+            with open("config.json", "r") as f:
+                return json.load(f)
+        except:
+            pass
+    config = {
+        "custos_fixos": {"aluguel": 90, "pro_labore": 120, "contabilidade": 352, "internet": 90, "logistica": 250, "outros": 300},
+        "impostos": {"ii": 0, "ipi": 0, "icms": 4.5, "pis": 0, "cofins": 0, "iof": 0},
+        "marketplaces": {"Mercado Livre": {"comissao": 6.75, "taxa_fixa": 0.13}, "Shopee": {"comissao": 4.0, "taxa_fixa": 0.20}, "Amazon": {"comissao": 4.5, "taxa_fixa": 0.15}},
+        "cotacao_dolar": 5.30
+    }
+    with open("config.json", "w") as f:
+        json.dump(config, f, indent=4)
+    return config
 
-  markup = preco_venda / custo_produto_brl if custo_produto_brl > 0 else 0
-  return round(preco_venda, 2), round(markup, 2)
+def carregar_produtos():
+    if os.path.exists("produtos.csv"):
+        try:
+            return pd.read_csv("produtos.csv")
+        except:
+            return pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace", "Registrado_Por", "Data_Hora"])
+    else:
+        df = pd.DataFrame(columns=["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace", "Registrado_Por", "Data_Hora"])
+        df.to_csv("produtos.csv", index=False)
+        return df
 
+def salvar_produtos(df):
+    df.to_csv("produtos.csv", index=False)
 
-# Controle de Sessão de Login
-if "logged_in" not in st.session_state:
-  st.session_state["logged_in"] = False
-  st.session_state["user"] = ""
+def calcular_preco(row, config, vendas_mes):
+    cotacao = config["cotacao_dolar"]
+    # Corrigindo nomes de colunas com padrão percentual para coerência
+    cofins = row.get("COFINS_%", 0) if "COFINS_%" in row else row.get("COFINS_", 0)
+    iof = row.get("IOF_%", 0) if "IOF_%" in row else row.get("IOF_", 0)
 
-# Tela de Login
-if not st.session_state["logged_in"]:
-  st.markdown(
-      "<h2 style='text-align: center;'>🔐 Calc Markup - Acesso Restrito</h2>",
-      unsafe_allow_html=True,
-  )
-  col1, col2, col3 = st.columns([1, 2, 1])
-  with col2:
-    tab1, tab2 = st.tabs(["Entrar", "Cadastrar Usuário"])
+    custo_brl = (row["Custo_USD"] + row["Frete_USD"]) * cotacao * (1 + config["impostos"]["iof"] / 100)
+    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + row["PIS_%"] + cofins + iof) / 100
+    custo_fixo_total = sum(config["custos_fixos"].values())
+    custo_fixo_unit = custo_fixo_total / vendas_mes if vendas_mes > 0 else 0
+    custo_total = custo_brl + impostos + row["Embalagem_R$"] + custo_fixo_unit
+    marketplace = row["Marketplace"]
+    if marketplace in config["marketplaces"]:
+        taxa_percentual = config["marketplaces"][marketplace]["comissao"]
+        taxa_fixa = config["marketplaces"][marketplace]["taxa_fixa"]
+    else:
+        taxa_percentual = 0
+        taxa_fixa = 0
+    lucro_desejado = 0.20
+    preco_final = (custo_total * (1 + lucro_desejado) + taxa_fixa) / (1 - taxa_percentual / 100)
+    lucro_real = preco_final - custo_total - (preco_final * taxa_percentual / 100) - taxa_fixa
+    lucro_percentual = (lucro_real / preco_final) * 100 if preco_final > 0 else 0
+    roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
+    return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
 
-    with tab1:
-      username = st.text_input("Usuário", key="login_user")
-      password = st.text_input("Senha", type="password", key="login_pass")
-      if st.button("Entrar no Sistema", use_container_width=True):
-        users = load_users()
-        if username in users and users[username] == password:
-          st.session_state["logged_in"] = True
-          st.session_state["user"] = username
-          st.success("Login realizado com sucesso!")
-          st.rerun()  # Corrigido de st.experimental_rerun() para st.rerun()
-        else:
-          st.error("Usuário ou senha incorretos.")
+# ================== MENU LATERAL E SESSÃO ==================
+st.sidebar.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=220)
 
-    with tab2:
-      new_user = st.text_input("Novo Usuário", key="new_user")
-      new_pass = st.text_input("Nova Senha", type="password", key="new_pass")
-      if st.button("Cadastrar", use_container_width=True):
-        if new_user and new_pass:
-          users = load_users()
-          if new_user in users:
-            st.warning("Usuário já existe.")
-          else:
-            save_user(new_user, new_pass)
-            st.success(
-                "Usuário cadastrado com sucesso! Faça login na aba ao lado."
-            )
-        else:
-          st.warning("Preencha todos os campos.")
-  st.stop()
+st.sidebar.markdown(f"""
+<h1 style='font-size: 28px; margin-bottom: 0px; line-height: 1.0; text-align: center; letter-spacing: 1px;'>CALC MARKUP</h1>
+<p style='font-size: 14px; color: #cccccc; margin-top: -5px; text-align: center;'>LM - Importing 2U®</p>
+<hr style='margin: 10px 0; border-color: #444;'>
+<p style='font-size: 13px; color: #ffffff; text-align: center;'>👤 <b>{st.session_state.nome_usuario_atual}</b><br><span style='color: #4CAF50; font-size: 11px;'>({st.session_state.tipo_usuario})</span></p>
+""", unsafe_allow_html=True)
 
-# Menu Lateral Original
-st.sidebar.markdown(f"### Olá, **{st.session_state['user']}**!")
-menu = st.sidebar.selectbox(
+if st.sidebar.button("📝 Sair / Trocar Usuário"):
+    st.session_state.autenticado = False
+    st.session_state.usuario_atual = None
+    st.session_state.nome_usuario_atual = None
+    st.session_state.tipo_usuario = None
+    st.experimental_rerun()
+
+pagina = st.sidebar.radio(
     "Navegação",
-    [
-        "📊 Dashboard",
-        "➕ Cadastro & Precificação",
-        "📦 Estoque e Produtos",
-        "🏷️ Simulador Atacado",
-        "📖 Manual & Documentação",
-    ],
+    ["🏠 Início", "📝 Cadastrar Produto", "📥 Importar CSV", "📦 Produtos", "🏠 Dashboard", "🧮 Simulador", "📊 Relatório", "⚙️ Configurações", "📦 Atacado"]
 )
 
-if st.sidebar.button("Sair da Conta", use_container_width=True):
-  st.session_state["logged_in"] = False
-  st.session_state["user"] = ""
-  st.rerun()  # Corrigido de st.experimental_rerun() para st.rerun()
+config = carregar_config()
+df_produtos = carregar_produtos()
+vendas_mes = st.sidebar.number_input("Vendas estimadas no mês", min_value=1, value=100, step=10)
 
-# Carregar Dados de Produtos
-df_produtos = pd.read_csv(PRODUCTS_FILE)
+# ================== PÁGINAS DO APLICATIVO ==================
+if pagina == "🏠 Início":
+    st.markdown("""
+    <style>
+        .stApp {
+            background-image: url("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/P%C3%A1gina%20Inicial.png");
+            background-size: 55% auto;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style='text-align: center; padding-top: 300px;'>
+        <div style='background-color: rgba(255, 255, 255, 0.88); padding: 25px 45px; border-radius: 20px; display: inline-block; box-shadow: 0 8px 30px rgba(0,0,0,0.2);'>
+            <h1 style='color: #1a1a1a; font-size: 42px; font-weight: bold; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.05);'>Bem-vindo ao CALC MARKUP</h1>
+            <p style='color: #222; font-size: 20px; margin-top: 2px; font-weight: 500;'>Sua ferramenta inteligente para precificar importações.</p>
+            <p style='color: #444; font-size: 16px; margin-top: 2px;'>Clique em '📝 Cadastrar Produto' no menu para começar.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# 1. DASHBOARD
-# -------------------------------------------------------------
-if menu == "📊 Dashboard":
-  st.title("📊 Painel de Controle Financeiro")
-  st.markdown("Visão geral da sua operação, margens e portfólio cadastrado.")
+elif pagina == "📝 Cadastrar Produto":
+    st.title("📝 Cadastrar Novo Produto")
+    with st.form("form_produto"):
+        col1, col2 = st.columns(2)
+        with col1:
+            nome = st.text_input("Nome do Produto")
+            custo_usd = st.number_input("Custo em USD", min_value=0.01, step=0.01)
+            frete_usd = st.number_input("Frete em USD", min_value=0.0, step=0.01)
+            embalagem = st.number_input("Embalagem em R$", min_value=0.0, step=0.01)
+        with col2:
+            marketplace = st.selectbox("Marketplace", ["Mercado Livre", "Shopee", "Amazon"])
+            ii = st.number_input("II %", min_value=0.0, step=0.1)
+            ipi = st.number_input("IPI %", min_value=0.0, step=0.1)
+            icms = st.number_input("ICMS %", min_value=0.0, step=0.1)
+            pis = st.number_input("PIS %", min_value=0.0, step=0.1)
+            cofins = st.number_input("COFINS %", min_value=0.0, step=0.1)
+            iof = st.number_input("IOF %", min_value=0.0, step=0.1)
+        submit = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
+        if submit:
+            if df_produtos.empty or "ID" not in df_produtos.columns:
+                novo_id = 1
+            else:
+                # Garantindo que ID seja numérico e sem NaNs
+                ids_validos = pd.to_numeric(df_produtos["ID"], errors='coerce').dropna()
+                novo_id = int(ids_validos.max()) + 1 if not ids_validos.empty else 1
 
-  col1, col2, col3 = st.columns(3)
-  col1.metric("Total de Produtos Cadastrados", len(df_produtos))
+            novo_produto = pd.DataFrame({
+                "ID": [novo_id], 
+                "Nome": [nome], 
+                "Custo_USD": [custo_usd], 
+                "Frete_USD": [frete_usd],
+                "Embalagem_R$": [embalagem], 
+                "II_%": [ii], 
+                "IPI_%": [ipi], 
+                "ICMS_%": [icms],
+                "PIS_%": [pis], 
+                "COFINS_%": [cofins], 
+                "IOF_%": [iof], 
+                "Marketplace": [marketplace],
+                "Registrado_Por": [st.session_state.nome_usuario_atual],
+                "Data_Hora": [datetime.now().strftime("%d/%m/%Y %H:%M")]
+            })
+            df_produtos = pd.concat([df_produtos, novo_produto], ignore_index=True)
+            salvar_produtos(df_produtos)
+            st.success(f"✅ Produto '{nome}' cadastrado por {st.session_state.nome_usuario_atual}!")
 
-  if not df_produtos.empty:
-    media_markup = (
-        df_produtos["Markup"].mean() if "Markup" in df_produtos.columns else 0
-    )
-    media_preco = (
-        df_produtos["Preco_Venda"].mean()
-        if "Preco_Venda" in df_produtos.columns
-        else 0
-    )
-    col2.metric("Markup Médio Geral", f"{media_markup:.2f}x")
-    col3.metric("Preço Médio de Venda", f"R$ {media_preco:.2f}")
+elif pagina == "📥 Importar CSV":
+    st.title("📥 Importar Produtos via CSV")
+    st.markdown("Formato esperado das colunas: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_%,IOF_%,Marketplace")
+    arquivo = st.file_uploader("Escolha o CSV", type="csv")
+    if arquivo:
+        try:
+            df_import = pd.read_csv(arquivo)
+            # Verificar colunas obrigatórias
+            col_obrigatorias = ["Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_%", "IOF_%", "Marketplace"]
+            falta_colunas = [col for col in col_obrigatorias if col not in df_import.columns]
+            if falta_colunas:
+                st.error(f"Colunas faltando no arquivo CSV: {', '.join(falta_colunas)}")
+            else:
+                ultimo_id = int(pd.to_numeric(df_produtos["ID"], errors='coerce').dropna().max()) if not df_produtos.empty and "ID" in df_produtos.columns else 0
+                df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
+                df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
+                df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                # Selecionar somente colunas esperadas mais ID e auditoria
+                colunas_para_manter = ["ID"] + col_obrigatorias + ["Registrado_Por", "Data_Hora"]
+                df_import = df_import[colunas_para_manter]
+                df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
+                salvar_produtos(df_produtos)
+                st.success(f"✅ {len(df_import)} produtos importados por {st.session_state.nome_usuario_atual}!")
+        except Exception as e:
+            st.error(f"Erro ao importar CSV: {e}")
+
+elif pagina == "📦 Produtos":
+    st.title("📦 Lista de Produtos e Auditoria")
+    if not df_produtos.empty:
+        # Mostra Produto com ID para evitar ambiguidades ao deletar
+        df_exibir = df_produtos.copy()
+        df_exibir["Nome_Completo"] = df_exibir.apply(lambda x: f"{x['ID']} - {x['Nome']}", axis=1)
+        st.dataframe(df_produtos, use_container_width=True, height=400)
+        if st.button("📥 Exportar para Excel"):
+            df_produtos.to_excel("produtos_exportados.xlsx", index=False)
+            st.success("Arquivo exportado!")
+
+        with st.expander("🗑️ Deletar Produto"):
+            produto_del = st.selectbox("Selecione o produto para deletar", df_exibir["Nome_Completo"].tolist())
+            if st.button("Deletar", type="primary"):
+                if produto_del:
+                    id_del = int(produto_del.split(" - ")[0])
+                    df_produtos = df_produtos[df_produtos["ID"] != id_del]
+                    salvar_produtos(df_produtos)
+                    st.success(f"Produto ID {id_del} deletado por {st.session_state.nome_usuario_atual}")
+                    st.experimental_rerun()
+    else:
+        st.info("Nenhum produto cadastrado.")
+
+elif pagina == "🏠 Dashboard":
+    st.title("🏠 Dashboard - Resumo Financeiro")
+    if not df_produtos.empty:
+        resultados = []
+        for _, row in df_produtos.iterrows():
+            res = calcular_preco(row, config, vendas_mes)
+            resultados.append(res)
+        df_res = pd.DataFrame(resultados)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Produtos", len(df_produtos))
+        col2.metric("Faturamento Estimado", f"R$ {df_res['Preco_Final_R$'].sum():,.2f}")
+        col3.metric("Lucro Total", f"R$ {df_res['Lucro_R$'].sum():,.2f}")
+        col4.metric("ROI Médio", f"{df_res['ROI_%'].mean():.1f}%")
+        
+        st.subheader("📊 Preço Final vs Lucro por Produto")
+        fig = px.bar(df_res, x=df_produtos["Nome"], y=["Preco_Final_R$", "Lucro_R$"], barmode="group", title="Preço Final vs Lucro por Produto")
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.subheader("Participação de cada Marketplace no Lucro Total")
+        df_pizza = df_res.groupby(df_produtos["Marketplace"])["Lucro_R$"].sum().reset_index()
+        df_pizza.columns = ["Marketplace", "Lucro_R$"]
+        
+        cores_marketplace = {"Mercado Livre": "#FFD700", "Shopee": "#FF8C00", "Amazon": "#1A1A1A"}
+        
+        lista_cores_final = [cores_marketplace.get(m, "#808080") for m in df_pizza["Marketplace"]]
+        
+        fig_pizza = go.Figure(data=[go.Pie(
+            labels=df_pizza["Marketplace"],
+            values=df_pizza["Lucro_R$"],
+            marker=dict(colors=lista_cores_final, line=dict(color='#FFFFFF', width=3)),
+            textinfo='label+percent', textfont=dict(size=20, color='white'), sort=False, pull=[0.05]*len(df_pizza)
+        )])
+        fig_pizza.update_layout(height=600, width=900, margin=dict(l=20, r=20, t=40, b=20), showlegend=True)
+        st.plotly_chart(fig_pizza, use_container_width=True)
+    else:
+        st.info("Nenhum produto cadastrado.")
+
+elif pagina == "🧮 Simulador":
+    st.title("🧮 Simulador de Preço e Margem")
+    if not df_produtos.empty:
+        produto_sel = st.selectbox("Selecione um produto", df_produtos["Nome"].tolist())
+        row = df_produtos[df_produtos["Nome"] == produto_sel].iloc[0]
+        col1, col2 = st.columns(2)
+        with col1:
+            preco_sugerido = st.number_input("Preço sugerido (R$)", min_value=1.0, step=1.0)
+        with col2:
+            quantidade = st.number_input("Quantidade", min_value=1, value=1, step=1)
+        res = calcular_preco(row, config, vendas_mes)
+        custo_total = res["Custo_Total_R$"]
+        preco_calculado = res["Preco_Final_R$"]
+        if preco_sugerido > 0:
+            marketplace = row["Marketplace"]
+            taxa_percentual = config["marketplaces"][marketplace]["comissao"] if marketplace in config["marketplaces"] else 0
+            taxa_fixa = config["marketplaces"][marketplace]["taxa_fixa"] if marketplace in config["marketplaces"] else 0
+            lucro_real = preco_sugerido - custo_total - (preco_sugerido * taxa_percentual / 100) - taxa_fixa
+            roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Custo Total", f"R$ {custo_total:.2f}")
+            col2.metric("Preço Sugerido", f"R$ {preco_sugerido:.2f}")
+            col3.metric("Lucro R$", f"R$ {lucro_real:.2f}", delta=f"{(lucro_real/preco_sugerido)*100:.1f}%")
+            col4.metric("ROI", f"{roi:.1f}%")
+            if lucro_real < 0:
+                st.warning("⚠️ Prejuízo! Aumente o preço.")
+            st.info(f"💡 Preço ideal calculado: **R$ {preco_calculado:.2f}**")
+    else:
+        st.info("Nenhum produto cadastrado.")
+
+elif pagina == "📊 Relatório":
+    st.title("📊 Relatório Completo com Auditoria")
+    if not df_produtos.empty:
+        resultados = []
+        for _, row in df_produtos.iterrows():
+            res = calcular_preco(row, config, vendas_mes)
+            resultados.append({
+                "Produto": row["Nome"], 
+                "Marketplace": row["Marketplace"], 
+                "Custo Total": res["Custo_Total_R$"], 
+                "Preço Final": res["Preco_Final_R$"], 
+                "Lucro R$": res["Lucro_R$"], 
+                "Lucro %": res["Lucro_%"], 
+                "ROI %": res["ROI_%"],
+                "Cadastrado Por": row.get("Registrado_Por", "N/D"),
+                "Data/Hora": row.get("Data_Hora", "N/D")
+            })
+        df_rel = pd.DataFrame(resultados)
+        st.dataframe(df_rel, use_container_width=True, height=400)
+        if st.button("📥 Exportar para Excel"):
+            df_rel.to_excel("relatorio_precos.xlsx", index=False)
+            st.success("Relatório exportado!")
+    else:
+        st.info("Nenhum produto cadastrado.")
+
+elif pagina == "⚙️ Configurações":
+    st.title("⚙️ Configurações")
+    
+    if st.session_state.tipo_usuario == "Administrador":
+        st.subheader("👥 Gerenciamento de Usuários e Acessos")
+        with st.form("form_novo_usuario"):
+            st.markdown("**Adicionar Novo Usuário**")
+            nome_completo_novo = st.text_input("Nome Completo do Usuário (Ex: Luiz, Maria...)")
+            login_novo = st.text_input("Nome de Usuário para Login (Ex: luiz, maria...)")
+            senha_novo = st.text_input("Senha Inicial", type="password")
+            tipo_novo = st.selectbox("Tipo de Acesso", ["Usuário Comum", "Administrador"])
+            btn_criar_user = st.form_submit_button("➕ Criar Usuário")
+            
+            if btn_criar_user:
+                if nome_completo_novo and login_novo and senha_novo:
+                    if login_novo in st.session_state.usuarios_db_v3:
+                        st.error("⚠️ Este login de usuário já existe.")
+                    else:
+                        st.session_state.usuarios_db_v3[login_novo] = {
+                            "nome": nome_completo_novo,
+                            "senha": hash_senha(senha_novo),
+                            "tipo": tipo_novo
+                        }
+                        salvar_usuarios(st.session_state.usuarios_db_v3)
+                        st.success(f"✅ Usuário '{nome_completo_novo}' ({login_novo}) criado com sucesso!")
+                else:
+                    st.warning("Por favor, preencha todos os campos do novo usuário.")
+        
+        st.markdown("---")
+        
+        with st.form("form_alterar_senha"):
+            st.markdown("**🔑 Alterar Senha de Usuário**")
+            usuarios_lista = list(st.session_state.usuarios_db_v3.keys())
+            usuario_alvo = st.selectbox("Selecione o usuário para alterar a senha", usuarios_lista)
+            nova_senha_input = st.text_input("Nova Senha", type="password")
+            btn_alt_senha = st.form_submit_button("🔄 Atualizar Senha")
+            
+            if btn_alt_senha:
+                if nova_senha_input:
+                    st.session_state.usuarios_db_v3[usuario_alvo]["senha"] = hash_senha(nova_senha_input)
+                    salvar_usuarios(st.session_state.usuarios_db_v3)
+                    st.success(f"✅ Senha do usuário '{usuario_alvo}' alterada com sucesso!")
+                else:
+                    st.warning("Digite a nova senha.")
+        
+        st.markdown("---")
+        st.markdown("**Usuários Cadastrados no Sistema:**")
+        for usr, info in list(st.session_state.usuarios_db_v3.items()):
+            col_u1, col_u2, col_u3, col_u4 = st.columns([2, 2, 2, 1])
+            col_u1.write(f"👤 **{info.get('nome', usr)}**")
+            col_u2.write(f"Login: `{usr}`")
+            col_u3.write(f"Tipo: {info['tipo']}")
+            # Não permitir deletar o usuário admin em hipótese alguma
+            if usr != "admin":
+                if col_u4.button("🗑️ Deletar", key=f"del_{usr}"):
+                    if usr == st.session_state.usuario_atual:
+                        st.error("⚠️ Você não pode deletar o seu próprio usuário logado.")
+                    else:
+                        del st.session_state.usuarios_db_v3[usr]
+                        salvar_usuarios(st.session_state.usuarios_db_v3)
+                        st.success(f"Usuário {usr} removido!")
+                        st.experimental_rerun()
+        st.markdown("---")
+    else:
+        st.info("ℹ️ Apenas o Administrador pode cadastrar novos usuários, alterar senhas ou remover acessos.")
+
+    st.subheader("💰 Custos Fixos Mensais")
+    col1, col2 = st.columns(2)
+    with col1:
+        config["custos_fixos"]["aluguel"] = st.number_input("Aluguel", value=float(config["custos_fixos"]["aluguel"]))
+        config["custos_fixos"]["pro_labore"] = st.number_input("Pró-labore", value=float(config["custos_fixos"]["pro_labore"]))
+        config["custos_fixos"]["contabilidade"] = st.number_input("Contabilidade", value=float(config["custos_fixos"]["contabilidade"]))
+    with col2:
+        config["custos_fixos"]["internet"] = st.number_input("Internet", value=float(config["custos_fixos"]["internet"]))
+        config["custos_fixos"]["logistica"] = st.number_input("Logística", value=float(config["custos_fixos"]["logistica"]))
+        config["custos_fixos"]["outros"] = st.number_input("Outros", value=float(config["custos_fixos"]["outros"]))
+    
+    st.subheader("📊 Impostos (%)")
+    col1, col2 = st.columns(2)
+    with col1:
+        config["impostos"]["ii"] = st.number_input("II", value=float(config["impostos"]["ii"]))
+        config["impostos"]["ipi"] = st.number_input("IPI", value=float(config["impostos"]["ipi"]))
+        config["impostos"]["icms"] = st.number_input("ICMS", value=float(config["impostos"]["icms"]))
+    with col2:
+        config["impostos"]["pis"] = st.number_input("PIS", value=float(config["impostos"]["pis"]))
+        config["impostos"]["cofins"] = st.number_input("COFINS", value=float(config["impostos"]["cofins"]))
+        config["impostos"]["iof"] = st.number_input("IOF", value=float(config["impostos"]["iof"]))
+        
+    st.subheader("🏪 Marketplaces")
+    for mp in config["marketplaces"]:
+        col1, col2 = st.columns(2)
+        with col1:
+            config["marketplaces"][mp]["comissao"] = st.number_input(f"{mp} - Comissão %", value=float(config["marketplaces"][mp]["comissao"]))
+        with col2:
+            config["marketplaces"][mp]["taxa_fixa"] = st.number_input(f"{mp} - Taxa Fixa R$", value=float(config["marketplaces"][mp]["taxa_fixa"]))
+            
+    st.subheader("💱 Cotação")
+    config["cotacao_dolar"] = st.number_input("Cotação do Dólar (R$)", value=float(config["cotacao_dolar"]), step=0.01)
+    
+    if st.button("💾 Salvar Configurações", use_container_width=True):
+        with open("config.json", "w") as f:
+            json.dump(config, f, indent=4)
+        st.success(f"✅ Configurações salvas por {st.session_state.nome_usuario_atual}!")
 
     st.markdown("---")
-    st.subheader("Últimos Produtos Cadastrados")
-    st.dataframe(df_produtos.tail(5), use_container_width=True)
-  else:
-    st.info("Nenhum produto cadastrado no momento.")
+    st.subheader("📘 Manual do Usuário")
+    url_manual = "https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/Manual_CALC_MARKUP.pdf"
+    col_man1, col_man2 = st.columns([1, 3])
+    with col_man1:
+        st.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=90)
+    with col_man2:
+        st.markdown(f"[📄 Abrir Manual do Usuário]({url_manual})", unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# 2. CADASTRO & PRECIFICAÇÃO
-# -------------------------------------------------------------
-elif menu == "➕ Cadastro & Precificação":
-  st.title("➕ Calculadora & Cadastro de Produtos")
-  st.markdown(
-      "Insira os custos de importação e taxas para calcular o preço ideal de"
-      " venda."
-  )
-
-  with st.form("form_precificacao"):
-    col1, col2 = st.columns(2)
-
-    with col1:
-      st.subheader("Custos de Aquisição")
-      produto = st.text_input("Nome do Produto")
-      sku = st.text_input("SKU / Código")
-      custo_usd = st.number_input(
-          "Custo Unitário (USD / RMB)", min_value=0.0, value=10.0, step=0.1
-      )
-      dolar = st.number_input(
-          "Cotação da Moeda (R$)", min_value=0.0, value=5.50, step=0.01
-      )
-      frete_impostos_brl = st.number_input(
-          "Frete Proporcional + Impostos BR (R$)",
-          min_value=0.0,
-          value=5.0,
-          step=0.5,
-      )
-      embalagem = st.number_input(
-          "Custo de Embalagem (R$)", min_value=0.0, value=2.0, step=0.1
-      )
-
-    with col2:
-      st.subheader("Taxas e Margens (%)")
-      custo_fixo_pct = st.number_input(
-          "Custo Fixo Operacional (%)", min_value=0.0, value=5.0, step=0.5
-      )
-      comissao_mkt_pct = st.number_input(
-          "Comissão do Marketplace (%)", min_value=0.0, value=16.0, step=0.5
-      )
-      imposto_venda_pct = st.number_input(
-          "Imposto sobre Venda (ME/Simples) (%)",
-          min_value=0.0,
-          value=6.0,
-          step=0.5,
-      )
-      lucro_desejado_pct = st.number_input(
-          "Lucro Líquido Desejado (%)", min_value=0.0, value=15.0, step=0.5
-      )
-      tarifa_fixa = st.number_input(
-          "Tarifa Fixa do Marketplace (R$)", min_value=0.0, value=6.0, step=0.5
-      )
-
-    submitted = st.form_submit_button("Calcular e Salvar Produto")
-
-    if submitted:
-      if produto:
-        p_venda, markup = calcular_preco(
-            custo_usd,
-            dolar,
-            frete_impostos_brl,
-            embalagem,
-            custo_fixo_pct,
-            comissao_mkt_pct,
-            imposto_venda_pct,
-            lucro_desejado_pct,
-            tarifa_fixa,
-        )
-
-        novo_registro = {
-            "Produto": produto,
-            "SKU": sku if sku else "N/A",
-            "Custo_USD": custo_usd,
-            "Dolar": dolar,
-            "Frete_Impostos": frete_impostos_brl,
-            "Embalagem": embalagem,
-            "Custo_Fixo_Pct": custo_fixo_pct,
-            "Comissao_Mkt": comissao_mkt_pct,
-            "Imposto_Venda": imposto_venda_pct,
-            "Lucro_Desejado": lucro_desejado_pct,
-            "Tarifa_Fixa": tarifa_fixa,
-            "Preco_Venda": p_venda,
-            "Markup": markup,
-            "Tipo": "Varejo",
-        }
-
-        df_produtos = pd.concat(
-            [df_produtos, pd.DataFrame([novo_registro])], ignore_index=True
-        )
-        df_produtos.to_csv(PRODUCTS_FILE, index=False)
-
-        st.success(
-            f"Produto salvo com sucesso! Preço de Venda: R$ {p_venda:.2f} |"
-            f" Markup: {markup}x"
-        )
-      else:
-        st.warning("Por favor, informe pelo menos o nome do produto.")
-
-# -------------------------------------------------------------
-# 3. ESTOQUE E PRODUTOS
-# -------------------------------------------------------------
-elif menu == "📦 Estoque e Produtos":
-  st.title("📦 Gerenciamento de Produtos Cadastrados")
-  st.markdown("Consulte, analise e gerencie sua base de itens salvos.")
-
-  if not df_produtos.empty:
-    st.dataframe(df_produtos, use_container_width=True)
-
-    if st.button("Limpar Todos os Registros", type="primary"):
-      df_empty = pd.DataFrame(columns=df_produtos.columns)
-      df_empty.to_csv(PRODUCTS_FILE, index=False)
-      st.success("Base de dados limpa com sucesso!")
-      st.rerun()  # Corrigido de st.experimental_rerun() para st.rerun()
-  else:
-    st.info("Nenhum produto cadastrado até o momento.")
-
-# -------------------------------------------------------------
-# 4. SIMULADOR ATACADO
-# -------------------------------------------------------------
-elif menu == "🏷️ Simulador Atacado":
-  st.title("🏷️ Simulador de Precificação para Atacado")
-  st.markdown(
-      "Calcule margens e preços diferenciados para vendas em volume/atacado,"
-      " reduzindo taxas de marketplace ou aplicando descontos progressivos."
-  )
-
-  col1, col2 = st.columns(2)
-
-  with col1:
-    st.subheader("Parâmetros do Lote")
-    custo_unit_base = st.number_input(
-        "Custo Base do Produto (R$)", min_value=0.0, value=25.0, step=0.5
-    )
-    quantidade_lote = st.number_input(
-        "Quantidade de Peças no Atacado", min_value=1, value=10, step=1
-    )
-    desconto_atacado_pct = st.slider(
-        "Desconto / Redução de Margem Varejo (%)", 0.0, 50.0, 15.0, 1.0
-    )
-
-  with col2:
-    st.subheader("Estrutura de Custos Operacionais")
-    comissao_atacado = st.number_input(
-        "Comissão Canal Atacado (%)", min_value=0.0, value=5.0, step=0.5
-    )
-    imposto_atacado = st.number_input(
-        "Imposto Venda Atacado (%)", min_value=0.0, value=4.0, step=0.5
-    )
-    lucro_almejado_atacado = st.number_input(
-        "Lucro Almejado no Atacado (%)", min_value=0.0, value=10.0, step=0.5
-    )
-
-  if st.button("Calcular Condições de Atacado", use_container_width=True):
-    soma_aliquotas_atacado = (
-        comissao_atacado + imposto_atacado + lucro_almejado_atacado
-    ) / 100
-
-    if soma_aliquotas_atacado >= 1:
-      st.error(
-          "A soma das alíquotas ultrapassa 100%. Ajuste os percentuais informados."
-      )
-    else:
-      divisor_atacado = 1 - soma_aliquotas_atacado
-      preco_venda_unit_atacado = custo_unit_base / divisor_atacado
-
-      st.markdown("---")
-      st.subheader("Resultados da Simulação")
-
-      res_col1, res_col2, res_col3 = st.columns(3)
-      res_col1.metric("Custo Unitário", f"R$ {custo_unit_base:.2f}")
-      res_col2.metric(
-          "Preço Sugerido Unitário (Atacado)",
-          f"R$ {preco_venda_unit_atacado:.2f}",
-      )
-      res_col3.metric(
-          "Faturamento Total do Lote",
-          f"R$ {preco_venda_unit_atacado * quantidade_lote:.2f}",
-      )
-
-      st.info(
-          f"💡 **Dica de Negócio:** Para um lote com {quantidade_lote} unidades,"
-          f" o preço final sugerido por peça é de **R$"
-          f" {preco_venda_unit_atacado:.2f}** (mantendo a margem de lucro de"
-          f" {lucro_almejado_atacado}% após impostos e comissões reduzidas)."
-      )
-
-# -------------------------------------------------------------
-# 5. MANUAL & DOCUMENTAÇÃO
-# -------------------------------------------------------------
-elif menu == "📖 Manual & Documentação":
-  st.title("📖 Manual do Sistema e Documentação de Precificação")
-  st.markdown(
-      "Consulte o guia operacional do aplicativo ou faça o download do manual"
-      " oficial em PDF para consulta offline."
-  )
-
-  st.markdown("---")
-
-  st.subheader("📥 Download do Manual Oficial")
-  if os.path.exists(MANUAL_FILE):
-    with open(MANUAL_FILE, "rb") as pdf_file:
-      pdf_bytes = pdf_file.read()
-
-    st.download_button(
-        label="📄 Baixar Manual_CALC_MARKUP.pdf",
-        data=pdf_bytes,
-        file_name="Manual_CALC_MARKUP.pdf",
-        mime="application/pdf",
-        use_container_width=True,
-    )
-  else:
-    st.warning(
-        f"⚠️ O arquivo `{MANUAL_FILE}` não foi encontrado no diretório raiz do"
-        " projeto. Certifique-se de colocá-lo na mesma pasta do script"
-        " `app.py` para habilitar o download direto."
-    )
-
-  st.markdown("---")
-
-  st.subheader("💡 Guia Rápido de Utilização")
-  st.markdown("""
-  1. **Dashboard:** Acompanhe o volume total de itens e os indicadores médios da sua esteira comercial.
-  2. **Cadastro & Precificação:** Preencha os custos unitários em moeda estrangeira, fretes proporcionais e taxas. O algoritmo calcula de forma exata o Markup multiplicador e o Preço de Venda ideal com base no divisor de receitas.
-  3. **Estoque e Produtos:** Centraliza o histórico de tudo o que foi calculado, permitindo exportação e gerenciamento direto.
-  4. **Simulador Atacado:** Ferramenta dedicada para modelar vendas em grande volume, ajustando comissões menores de canais corporativos ou lotes fechados.
-  """)
+# Aqui pode adicionar conteúdo para "📦 Atacado" ou outras páginas se desejar.
