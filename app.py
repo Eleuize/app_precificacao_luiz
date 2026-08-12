@@ -192,7 +192,7 @@ def carregar_config():
     return config
 
 def carregar_produtos():
-    cols = ["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS", "COFINS", "IOF_%", "Marketplace", "Registrado_Por", "Data_Hora"]
+    cols = ["ID", "Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace", "Registrado_Por", "Data_Hora"]
     if os.path.exists("produtos.csv"):
         try:
             return pd.read_csv("produtos.csv")
@@ -209,10 +209,10 @@ def salvar_produtos(df):
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
     
-    # Tratamento para leitura correta das colunas PIS e COFINS com ou sem %
-    cofins = row.get("COFINS", row.get("COFINS_%", row.get("COFINS_", 0)))
-    pis = row.get("PIS", row.get("PIS_%", row.get("PIS_", 0)))
-    iof = row.get("IOF_%", row.get("IOF_", 0))
+    # Suporte para nomes de colunas conforme os novos parâmetros solicitados
+    cofins = row.get("COFINS_", row.get("COFINS_%", row.get("COFINS", 0)))
+    pis = row.get("PIS_%", row.get("PIS", 0))
+    iof = row.get("IOF_", row.get("IOF_%", 0))
 
     custo_brl = (row["Custo_USD"] + row["Frete_USD"]) * cotacao * (1 + config["impostos"]["iof"] / 100)
     impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + pis + cofins + iof) / 100
@@ -317,9 +317,9 @@ elif pagina == "📝 Cadastrar Produto":
                 "II_%": [ii], 
                 "IPI_%": [ipi], 
                 "ICMS_%": [icms],
-                "PIS": [pis], 
-                "COFINS": [cofins], 
-                "IOF_%": [iof], 
+                "PIS_%": [pis], 
+                "COFINS_": [cofins], 
+                "IOF_": [iof], 
                 "Marketplace": [marketplace],
                 "Registrado_Por": [st.session_state.nome_usuario_atual],
                 "Data_Hora": [datetime.now().strftime("%d/%m/%Y %H:%M")]
@@ -330,12 +330,12 @@ elif pagina == "📝 Cadastrar Produto":
 
 elif pagina == "📥 Importar CSV":
     st.title("📥 Importar Produtos via CSV")
-    st.markdown("Formato esperado das colunas: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS,COFINS,IOF_%,Marketplace")
+    st.markdown("Formato esperado das colunas: Nome,Custo_USD,Frete_USD,Embalagem_R$,II_%,IPI_%,ICMS_%,PIS_%,COFINS_,IOF_,Marketplace")
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
             df_import = pd.read_csv(arquivo)
-            col_obrigatorias = ["Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS", "COFINS", "IOF_%", "Marketplace"]
+            col_obrigatorias = ["Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]
             falta_colunas = [col for col in col_obrigatorias if col not in df_import.columns]
             if falta_colunas:
                 st.error(f"Colunas faltando no arquivo CSV: {', '.join(falta_colunas)}")
@@ -437,7 +437,7 @@ elif pagina == "🧮 Simulador":
             col4.metric("ROI", f"{roi:.1f}%")
             if lucro_real < 0:
                 st.warning("⚠️ Prejuízo! Aumente o preço.")
-            st.info(f"💡 Preço ideal calculado: **R$ {preco_calculado:.2f}**")
+            st.info(f"💡 Preço ideal calculated: **R$ {preco_calculado:.2f}**")
     else:
         st.info("Nenhum produto cadastrado.")
 
