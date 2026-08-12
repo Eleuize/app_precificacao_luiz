@@ -16,7 +16,7 @@ PRODUCTS_FILE = "produtos_markup.csv"
 MANUAL_FILE = "Manual_CALC_MARKUP.pdf"
 
 
-# Inicialização de Arquivos e Assets
+# Inicialização de Arquivos
 def init_files():
   if not os.path.exists(USERS_FILE):
     default_users = {"admin": "123456"}
@@ -61,7 +61,7 @@ def save_user(username, password):
     json.dump(users, f, ensure_ascii=False, indent=4)
 
 
-# Função de Cálculo de Preço (Core)
+# Função de Cálculo de Preço
 def calcular_preco(
     custo_usd,
     dolar,
@@ -113,7 +113,7 @@ if not st.session_state["logged_in"]:
           st.session_state["logged_in"] = True
           st.session_state["user"] = username
           st.success("Login realizado com sucesso!")
-          st.rerun()
+          st.rerun()  # Corrigido de st.experimental_rerun() para st.rerun()
         else:
           st.error("Usuário ou senha incorretos.")
 
@@ -134,7 +134,7 @@ if not st.session_state["logged_in"]:
           st.warning("Preencha todos os campos.")
   st.stop()
 
-# Menu Lateral e Navegação
+# Menu Lateral Original
 st.sidebar.markdown(f"### Olá, **{st.session_state['user']}**!")
 menu = st.sidebar.selectbox(
     "Navegação",
@@ -150,7 +150,7 @@ menu = st.sidebar.selectbox(
 if st.sidebar.button("Sair da Conta", use_container_width=True):
   st.session_state["logged_in"] = False
   st.session_state["user"] = ""
-  st.rerun()
+  st.rerun()  # Corrigido de st.experimental_rerun() para st.rerun()
 
 # Carregar Dados de Produtos
 df_produtos = pd.read_csv(PRODUCTS_FILE)
@@ -296,7 +296,7 @@ elif menu == "📦 Estoque e Produtos":
       df_empty = pd.DataFrame(columns=df_produtos.columns)
       df_empty.to_csv(PRODUCTS_FILE, index=False)
       st.success("Base de dados limpa com sucesso!")
-      st.rerun()
+      st.rerun()  # Corrigido de st.experimental_rerun() para st.rerun()
   else:
     st.info("Nenhum produto cadastrado até o momento.")
 
@@ -371,7 +371,7 @@ elif menu == "🏷️ Simulador Atacado":
       )
 
 # -------------------------------------------------------------
-# 5. MANUAL & DOCUMENTAÇÃO (Incluindo Download do PDF)
+# 5. MANUAL & DOCUMENTAÇÃO
 # -------------------------------------------------------------
 elif menu == "📖 Manual & Documentação":
   st.title("📖 Manual do Sistema e Documentação de Precificação")
@@ -382,7 +382,6 @@ elif menu == "📖 Manual & Documentação":
 
   st.markdown("---")
 
-  # Seção de Download do Manual
   st.subheader("📥 Download do Manual Oficial")
   if os.path.exists(MANUAL_FILE):
     with open(MANUAL_FILE, "rb") as pdf_file:
@@ -404,7 +403,6 @@ elif menu == "📖 Manual & Documentação":
 
   st.markdown("---")
 
-  # Guia Rápido Integrado
   st.subheader("💡 Guia Rápido de Utilização")
   st.markdown("""
   1. **Dashboard:** Acompanhe o volume total de itens e os indicadores médios da sua esteira comercial.
