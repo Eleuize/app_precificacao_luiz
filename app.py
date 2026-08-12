@@ -365,17 +365,14 @@ elif pagina == "📥 Importar CSV":
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
-            # Tenta ler com separador automático ou ';' típico do Excel em Português
             try:
                 df_import = pd.read_csv(arquivo, sep=None, engine='python', on_bad_lines='skip', encoding='utf-8-sig').dropna(how='all')
             except:
                 arquivo.seek(0)
                 df_import = pd.read_csv(arquivo, sep=';', on_bad_lines='skip', encoding='utf-8-sig').dropna(how='all')
 
-            # Limpa espaços invisíveis nos nomes das colunas
             df_import.columns = df_import.columns.str.strip()
 
-            # Padroniza nomes antigos de colunas caso existam
             renomear = {
                 "PIS": "PIS_%",
                 "COFINS": "COFINS_",
@@ -384,7 +381,6 @@ elif pagina == "📥 Importar CSV":
             }
             df_import = df_import.rename(columns=renomear)
 
-            # Se o CSV vier com a coluna ID da planilha, descarta para o app recalcular a sequência
             if "ID" in df_import.columns:
                 df_import = df_import.drop(columns=["ID"])
 
@@ -492,7 +488,7 @@ elif pagina == "🧮 Simulador":
             col4.metric("ROI", f"{roi:.1f}%")
             if lucro_real < 0:
                 st.warning("⚠️ Prejuízo! Aumente o preço.")
-            st.info(f"💡 Preço ideal calculated: **R$ {preco_calculado:.2f}**")
+            st.info(f"💡 Preço ideal calculado: **R$ {preco_calculado:.2f}**")
     else:
         st.info("Nenhum produto cadastrado.")
 
@@ -632,3 +628,36 @@ elif pagina == "⚙️ Configurações":
         st.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=90)
     with col_man2:
         st.markdown(f"[📄 Abrir Manual do Usuário]({url_manual})", unsafe_allow_html=True)
+
+elif pagina == "📦 Atacado":
+    st.title("📦 Precificação e Cotação de Atacado (B2B)")
+    if not df_produtos.empty:
+        st.info("💡 Módulo dedicado para simulação de vendas em lote com margens customizadas.")
+        produto_atacado = st.selectbox("Selecione um produto para Atacado", df_produtos["Nome"].tolist(), key="atacado_prod")
+        row = df_produtos[df_produtos["Nome"] == produto_atacado].iloc[0]
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            qtd_atacado = st.number_input("Quantidade do Lote", min_value=1, value=50, step=10)
+        with col2:
+            margem_desejada = st.number_input("Margem de Lucro Desejada (%)", min_value=1.0, value=15.0, step=1.0)
+        with col3:
+            desconto_extra = st.number_input("Desconto Extra no Lote (%)", min_value=0.0, value=0.0, step=0.5)
+            
+        res = calcular_preco(row, config, vendas_mes)
+        custo_unit = res["Custo_Total_R$"]
+        custo_lote = custo_unit * qtd_atacado
+        
+        preco_unit_atacado = custo_unit * (1 + margem_desejada / 100) * (1 - desconto_extra / 100)
+        faturamento_lote = preco_unit_atacado * qtd_atacado
+        lucro_lote = faturamento_lote - custo_lote
+        
+        st.markdown("---")
+        st.subheader("📊 Resumo da Proposta de Atacado")
+        col_a1, col_a2, col_a3, col_a4 = st.columns(4)
+        col_a1.metric("Custo Total do Lote", f"R$ {custo_lote:,.2f}")
+        col_a2.metric("Preço Unitário sugerido", f"R$ {preco_unit_atacado:,.2f}")
+        col_a3.metric("Valor Total do Lote", f"R$ {faturamento_lote:,.2f}")
+        col_a4.metric("Lucro Líquido do Lote", f"R$ {lucro_lote:,.2f}")
+    else:
+        st.info("Nenhum produto cadastrado para simulação.")
