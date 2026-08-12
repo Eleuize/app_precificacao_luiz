@@ -209,7 +209,7 @@ def salvar_produtos(df):
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
     
-    # Suporte para nomes de colunas conforme os novos parâmetros solicitados
+    # Suporte flexível para colunas de impostos
     cofins = row.get("COFINS_", row.get("COFINS_%", row.get("COFINS", 0)))
     pis = row.get("PIS_%", row.get("PIS", 0))
     iof = row.get("IOF_", row.get("IOF_%", 0))
@@ -334,9 +334,29 @@ elif pagina == "📥 Importar CSV":
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
-            df_import = pd.read_csv(arquivo)
+            # Leitura resiliente que ignora linhas vazias e aceita ponto e vírgula do Excel
+            try:
+                df_import = pd.read_csv(arquivo, sep=None, engine='python', on_bad_lines='skip').dropna(how='all')
+            except:
+                arquivo.seek(0)
+                df_import = pd.read_csv(arquivo, sep=';', on_bad_lines='skip').dropna(how='all')
+
+            # Padroniza nomes antigos de colunas caso existam
+            renomear = {
+                "PIS": "PIS_%",
+                "COFINS": "COFINS_",
+                "COFINS_%": "COFINS_",
+                "IOF_%": "IOF_"
+            }
+            df_import = df_import.rename(columns=renomear)
+
+            # Se o CSV vier com a coluna ID da planilha, descarta para o app recalcular a sequência
+            if "ID" in df_import.columns:
+                df_import = df_import.drop(columns=["ID"])
+
             col_obrigatorias = ["Nome", "Custo_USD", "Frete_USD", "Embalagem_R$", "II_%", "IPI_%", "ICMS_%", "PIS_%", "COFINS_", "IOF_", "Marketplace"]
             falta_colunas = [col for col in col_obrigatorias if col not in df_import.columns]
+            
             if falta_colunas:
                 st.error(f"Colunas faltando no arquivo CSV: {', '.join(falta_colunas)}")
             else:
@@ -344,6 +364,7 @@ elif pagina == "📥 Importar CSV":
                 df_import["ID"] = range(ultimo_id + 1, ultimo_id + 1 + len(df_import))
                 df_import["Registrado_Por"] = st.session_state.nome_usuario_atual
                 df_import["Data_Hora"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                
                 colunas_para_manter = ["ID"] + col_obrigatorias + ["Registrado_Por", "Data_Hora"]
                 df_import = df_import[colunas_para_manter]
                 df_produtos = pd.concat([df_produtos, df_import], ignore_index=True)
@@ -437,7 +458,7 @@ elif pagina == "🧮 Simulador":
             col4.metric("ROI", f"{roi:.1f}%")
             if lucro_real < 0:
                 st.warning("⚠️ Prejuízo! Aumente o preço.")
-            st.info(f"💡 Preço ideal calculated: **R$ {preco_calculado:.2f}**")
+            st.info(f"💡 Preço ideal calculado: **R$ {preco_calculado:.2f}**")
     else:
         st.info("Nenhum produto cadastrado.")
 
