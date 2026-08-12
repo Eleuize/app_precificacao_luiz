@@ -334,12 +334,15 @@ elif pagina == "📥 Importar CSV":
     arquivo = st.file_uploader("Escolha o CSV", type="csv")
     if arquivo:
         try:
-            # Leitura resiliente que ignora linhas vazias e aceita ponto e vírgula do Excel
+            # Tenta ler com separador automático ou ';' típico do Excel em Português
             try:
-                df_import = pd.read_csv(arquivo, sep=None, engine='python', on_bad_lines='skip').dropna(how='all')
+                df_import = pd.read_csv(arquivo, sep=None, engine='python', on_bad_lines='skip', encoding='utf-8-sig').dropna(how='all')
             except:
                 arquivo.seek(0)
-                df_import = pd.read_csv(arquivo, sep=';', on_bad_lines='skip').dropna(how='all')
+                df_import = pd.read_csv(arquivo, sep=';', on_bad_lines='skip', encoding='utf-8-sig').dropna(how='all')
+
+            # Limpa espaços invisíveis nos nomes das colunas
+            df_import.columns = df_import.columns.str.strip()
 
             # Padroniza nomes antigos de colunas caso existam
             renomear = {
@@ -458,7 +461,7 @@ elif pagina == "🧮 Simulador":
             col4.metric("ROI", f"{roi:.1f}%")
             if lucro_real < 0:
                 st.warning("⚠️ Prejuízo! Aumente o preço.")
-            st.info(f"💡 Preço ideal calculado: **R$ {preco_calculado:.2f}**")
+            st.info(f"💡 Preço ideal calculated: **R$ {preco_calculado:.2f}**")
     else:
         st.info("Nenhum produto cadastrado.")
 
