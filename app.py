@@ -209,29 +209,60 @@ def salvar_produtos(df):
 def calcular_preco(row, config, vendas_mes):
     cotacao = config["cotacao_dolar"]
     
-    # Suporte flexível para colunas de impostos
-    cofins = row.get("COFINS_", row.get("COFINS_%", row.get("COFINS", 0)))
-    pis = row.get("PIS_%", row.get("PIS", 0))
-    iof = row.get("IOF_", row.get("IOF_%", 0))
+    # Função auxiliar para converter valores (texto/vírgula) para float de forma totalmente segura
+    def para_float(val):
+        if pd.isna(val) or val == "":
+            return 0.0
+        if isinstance(val, (int, float)):
+            return float(val)
+        val_str = str(val).strip()
+        if val_str.count(",") == 1 and val_str.count(".") > 1:
+            val_str = val_str.replace(".", "").replace(",", ".")
+        else:
+            val_str = val_str.replace(",", ".")
+        try:
+            return float(val_str)
+        except:
+            return 0.0
 
-    custo_brl = (row["Custo_USD"] + row["Frete_USD"]) * cotacao * (1 + config["impostos"]["iof"] / 100)
-    impostos = custo_brl * (row["II_%"] + row["IPI_%"] + row["ICMS_%"] + pis + cofins + iof) / 100
+    custo_usd = para_float(row.get("Custo_USD", 0))
+    frete_usd = para_float(row.get("Frete_USD", 0))
+    embalagem = para_float(row.get("Embalagem_R$", 0))
+    ii = para_float(row.get("II_%", 0))
+    ipi = para_float(row.get("IPI_%", 0))
+    icms = para_float(row.get("ICMS_%", 0))
+    pis = para_float(row.get("PIS_%", row.get("PIS", 0)))
+    cofins = para_float(row.get("COFINS_", row.get("COFINS_%", row.get("COFINS", 0))))
+    iof = para_float(row.get("IOF_", row.get("IOF_%", 0)))
+
+    custo_brl = (custo_usd + frete_usd) * cotacao * (1 + config["impostos"]["iof"] / 100)
+    impostos = custo_brl * (ii + ipi + icms + pis + cofins + iof) / 100
     custo_fixo_total = sum(config["custos_fixos"].values())
     custo_fixo_unit = custo_fixo_total / vendas_mes if vendas_mes > 0 else 0
-    custo_total = custo_brl + impostos + row["Embalagem_R$"] + custo_fixo_unit
-    marketplace = row["Marketplace"]
+    custo_total = custo_brl + impostos + embalagem + custo_fixo_unit
+    
+    marketplace = str(row.get("Marketplace", "")).strip()
     if marketplace in config["marketplaces"]:
         taxa_percentual = config["marketplaces"][marketplace]["comissao"]
         taxa_fixa = config["marketplaces"][marketplace]["taxa_fixa"]
     else:
         taxa_percentual = 0
         taxa_fixa = 0
+        
     lucro_desejado = 0.20
-    preco_final = (custo_total * (1 + lucro_desejado) + taxa_fixa) / (1 - taxa_percentual / 100)
+    divisor = (1 - taxa_percentual / 100)
+    preco_final = (custo_total * (1 + lucro_desejado) + taxa_fixa) / divisor if divisor > 0 else custo_total
     lucro_real = preco_final - custo_total - (preco_final * taxa_percentual / 100) - taxa_fixa
     lucro_percentual = (lucro_real / preco_final) * 100 if preco_final > 0 else 0
     roi = (lucro_real / custo_total) * 100 if custo_total > 0 else 0
-    return {"Custo_Total_R$": round(custo_total, 2), "Preco_Final_R$": round(preco_final, 2), "Lucro_R$": round(lucro_real, 2), "Lucro_%": round(lucro_percentual, 1), "ROI_%": round(roi, 1)}
+    
+    return {
+        "Custo_Total_R$": round(custo_total, 2), 
+        "Preco_Final_R$": round(preco_final, 2), 
+        "Lucro_R$": round(lucro_real, 2), 
+        "Lucro_%": round(lucro_percentual, 1), 
+        "ROI_%": round(roi, 1)
+    }
 
 # ================== MENU LATERAL E SESSÃO ==================
 st.sidebar.image("https://raw.githubusercontent.com/Eleuize/app_precificacao_luiz/main/logo.png", width=220)
@@ -449,7 +480,7 @@ elif pagina == "🧮 Simulador":
         custo_total = res["Custo_Total_R$"]
         preco_calculado = res["Preco_Final_R$"]
         if preco_sugerido > 0:
-            marketplace = row["Marketplace"]
+            marketplace = str(row["Marketplace"]).strip()
             taxa_percentual = config["marketplaces"][marketplace]["comissao"] if marketplace in config["marketplaces"] else 0
             taxa_fixa = config["marketplaces"][marketplace]["taxa_fixa"] if marketplace in config["marketplaces"] else 0
             lucro_real = preco_sugerido - custo_total - (preco_sugerido * taxa_percentual / 100) - taxa_fixa
